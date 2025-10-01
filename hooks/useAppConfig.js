@@ -1,72 +1,13 @@
 import { useState, useEffect } from "react";
-
-// Simulación de datos de configuración hardcodeados
-const MOCK_CLIENT_CONFIGS = {
-  "foodbox-demo": {
-    clientId: "foodbox-demo",
-    appName: "Foodbox Delivery",
-    logoUrl: "/logos/foodbox-logo.png",
-    approach: "Approach 1",
-    primaryColor: "#ff6b35",
-    secondaryColor: "#f7931e",
-    features: {
-      deliveryRadius: 5,
-      categories: ["Pizza", "Burgers", "Asian", "Mexican"],
-      paymentMethods: ["Credit Card", "Cash", "PayPal"],
-    },
-    createdAt: "2024-01-15",
-    status: "active",
-  },
-  "planetpay-demo": {
-    clientId: "planetpay-demo",
-    appName: "PlanetPay",
-    logoUrl: "/logos/planetpay-logo.png",
-    approach: "Approach 1",
-    primaryColor: "#4f46e5",
-    secondaryColor: "#06b6d4",
-    features: {
-      supportedCurrencies: ["USD", "EUR", "BTC", "ETH"],
-      transactionTypes: ["Transfer", "Payment", "Investment"],
-      securityLevel: "high",
-    },
-    createdAt: "2024-01-20",
-    status: "active",
-  },
-  "techcorp-demo": {
-    clientId: "techcorp-demo",
-    appName: "TechCorp Solutions",
-    logoUrl: "/logos/techcorp-logo.png",
-    approach: "Approach 1",
-    primaryColor: "#10b981",
-    secondaryColor: "#059669",
-    features: {
-      services: ["Consulting", "Development", "Support"],
-      industries: ["Healthcare", "Finance", "Education"],
-    },
-    createdAt: "2024-02-01",
-    status: "active",
-  },
-  "default-client": {
-    clientId: "default-client",
-    appName: "Demo App",
-    logoUrl: "/logos/default-logo.png",
-    approach: "Approach 1",
-    primaryColor: "#3b82f6",
-    secondaryColor: "#64748b",
-    features: {
-      defaultFeature: true,
-    },
-    createdAt: "2024-01-01",
-    status: "active",
-  },
-};
+import { useRouter } from "next/router";
+import { supabase } from "../utils/supabaseClient";
 
 /**
- * Hook para cargar la configuración de white label del cliente
- * @param {string} clientId - ID del cliente
+ * Hook para cargar la configuración de white label del cliente desde Supabase
  * @returns {Object} { config, isLoading, error }
  */
-export const useAppConfig = (clientId) => {
+export const useAppConfig = () => {
+  const router = useRouter();
   const [config, setConfig] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -77,36 +18,83 @@ export const useAppConfig = (clientId) => {
         setIsLoading(true);
         setError(null);
 
-        // Simular delay de API
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        // Obtener clientId de la URL o usar 'default-foodbox' como fallback
+        const clientId = router.query.clientId || "default-foodbox";
 
-        // Buscar configuración del cliente
-        const clientConfig =
-          MOCK_CLIENT_CONFIGS[clientId] ||
-          MOCK_CLIENT_CONFIGS["default-client"];
+        // Realizar consultas simultáneas a ambas tablas
+        const [clientConfigResult, screenConfigResult] = await Promise.all([
+          supabase
+            .from("client_configs")
+            .select("*")
+            .eq("client_id", clientId)
+            .single(),
+          supabase
+            .from("client_screen_configs")
+            .select("*")
+            .eq("client_id", clientId),
+        ]);
 
-        if (!clientConfig) {
-          throw new Error(`Cliente con ID '${clientId}' no encontrado`);
+        // Verificar errores en las consultas
+        if (clientConfigResult.error) {
+          throw new Error(
+            `Error cargando configuración del cliente: ${clientConfigResult.error.message}`
+          );
         }
 
-        setConfig(clientConfig);
+        if (screenConfigResult.error) {
+          throw new Error(
+            `Error cargando configuración de pantallas: ${screenConfigResult.error.message}`
+          );
+        }
+
+        // Combinar los resultados en un objeto final
+        const finalConfig = {
+          clientId: clientConfigResult.data.client_id,
+          appName: clientConfigResult.data.app_name,
+          logo: clientConfigResult.data.logo,
+          primaryColor: clientConfigResult.data.primary_color,
+          secondaryColor: clientConfigResult.data.secondary_color,
+          approach: clientConfigResult.data.approach,
+          features: clientConfigResult.data.features || {},
+          screens: screenConfigResult.data.reduce((acc, screen) => {
+            acc[screen.screen_name] = {
+              ...screen,
+              // Agregar cualquier transformación necesaria aquí
+            };
+            return acc;
+          }, {}),
+          createdAt: clientConfigResult.data.created_at,
+          status: clientConfigResult.data.status,
+        };
+
+        setConfig(finalConfig);
       } catch (err) {
         console.error("Error cargando configuración del cliente:", err);
         setError(err.message);
-        // Fallback a configuración por defecto
-        setConfig(MOCK_CLIENT_CONFIGS["default-client"]);
+
+        // Fallback a configuración por defecto si hay error
+        setConfig({
+          clientId: "default-foodbox",
+          appName: "Demo App",
+          logo: "/logos/default-logo.png",
+          primaryColor: "#3b82f6",
+          secondaryColor: "#64748b",
+          approach: "Foodbox",
+          features: { defaultFeature: true },
+          screens: {},
+          createdAt: new Date().toISOString(),
+          status: "active",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (clientId) {
+    // Solo ejecutar cuando el router esté listo
+    if (router.isReady) {
       loadClientConfig();
-    } else {
-      setIsLoading(false);
-      setError("ClientId es requerido");
     }
-  }, [clientId]);
+  }, [router.isReady, router.query.clientId]);
 
   return {
     config,
@@ -116,33 +104,50 @@ export const useAppConfig = (clientId) => {
 };
 
 /**
- * Hook para obtener todos los clientes disponibles
- * @returns {Object} { clients, isLoading }
+ * Hook para obtener todos los clientes disponibles desde Supabase
+ * @returns {Object} { clients, isLoading, error }
  */
 export const useClients = () => {
   const [clients, setClients] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadClients = async () => {
       try {
         setIsLoading(true);
+        setError(null);
 
-        // Simular delay de API
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        // Consultar todos los clientes desde Supabase
+        const { data, error: queryError } = await supabase
+          .from("client_configs")
+          .select("*")
+          .eq("status", "active");
 
-        // Convertir configuraciones a lista de clientes
-        const clientsList = Object.values(MOCK_CLIENT_CONFIGS).map(
-          (client) => ({
-            ...client,
-            demoUrl: `/demo/${client.clientId}`,
-            adminUrl: `/demo/${client.clientId}/admin`,
-          })
-        );
+        if (queryError) {
+          throw new Error(`Error cargando clientes: ${queryError.message}`);
+        }
+
+        // Convertir configuraciones a lista de clientes con URLs
+        const clientsList = data.map((client) => ({
+          clientId: client.client_id,
+          appName: client.app_name,
+          logoUrl: client.logo,
+          approach: client.approach,
+          primaryColor: client.primary_color,
+          secondaryColor: client.secondary_color,
+          features: client.features || {},
+          createdAt: client.created_at,
+          status: client.status,
+          demoUrl: `/demo/${client.client_id}`,
+          adminUrl: `/demo/${client.client_id}/admin`,
+        }));
 
         setClients(clientsList);
       } catch (err) {
         console.error("Error cargando clientes:", err);
+        setError(err.message);
+        setClients([]);
       } finally {
         setIsLoading(false);
       }
@@ -154,6 +159,7 @@ export const useClients = () => {
   return {
     clients,
     isLoading,
+    error,
   };
 };
 

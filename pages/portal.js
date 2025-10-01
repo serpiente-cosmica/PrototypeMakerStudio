@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useRouter } from "next/router";
 import { useClients } from "../hooks/useAppConfig";
+import { useAppApproaches } from "../hooks/useAppApproaches";
 
 /**
  * Portal de gestión de clientes con tabla y tabs de approaches
@@ -7,6 +9,12 @@ import { useClients } from "../hooks/useAppConfig";
 const PortalPage = () => {
   const router = useRouter();
   const { clients, isLoading } = useClients();
+  const {
+    approaches,
+    isLoading: approachesLoading,
+    error: approachesError,
+  } = useAppApproaches();
+  const [showApproachesModal, setShowApproachesModal] = useState(false);
 
   const handleClientDemo = (clientId) => {
     window.open(`/demo/${clientId}`, "_blank");
@@ -17,7 +25,19 @@ const PortalPage = () => {
   };
 
   const handleCreateClient = () => {
-    router.push("/portal/new-client");
+    setShowApproachesModal(true);
+  };
+
+  const handleApproachSelect = (approachId) => {
+    // Permitir cualquier approach que venga de la base de datos
+    // Generate a unique client ID
+    const clientId = `new-client-${Date.now()}`;
+    router.push(`/demo/${clientId}`);
+    setShowApproachesModal(false);
+  };
+
+  const handleCloseModal = () => {
+    setShowApproachesModal(false);
   };
 
   const handleCopyUrl = (clientId) => {
@@ -159,6 +179,100 @@ const PortalPage = () => {
           </p>
         </div>
       </footer>
+
+      {/* Modal de Approaches */}
+      {showApproachesModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Select Approach for New Client
+                </h2>
+                <button
+                  onClick={handleCloseModal}
+                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              {approachesLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading approaches...</p>
+                </div>
+              ) : approachesError ? (
+                <div className="text-center py-12">
+                  <p className="text-red-600 mb-4">
+                    Error loading approaches: {approachesError}
+                  </p>
+                  <p className="text-gray-600">Using fallback data...</p>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {approaches.map((approach) => (
+                    <div
+                      key={approach.approach_id}
+                      className={`relative bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 ${
+                        approach.available
+                          ? "hover:shadow-xl hover:scale-105"
+                          : "opacity-60 cursor-not-allowed"
+                      }`}
+                      onClick={() => handleApproachSelect(approach.approach_id)}
+                    >
+                      {/* Header with gradient */}
+                      <div
+                        className={`h-24 bg-gradient-to-r ${
+                          approach.color === "blue"
+                            ? "from-blue-400 to-blue-600"
+                            : approach.color === "purple"
+                            ? "from-purple-400 to-purple-600"
+                            : approach.color === "green"
+                            ? "from-green-400 to-green-600"
+                            : approach.color === "orange"
+                            ? "from-orange-400 to-orange-600"
+                            : "from-red-400 to-red-600"
+                        } relative`}
+                      >
+                        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-3xl">
+                            {approach.available ? "🚀" : "🔒"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-4">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">
+                          {approach.name}
+                        </h3>
+                        <p className="text-gray-600 text-sm mb-3">
+                          {approach.description}
+                        </p>
+                        {approach.available ? (
+                          <div className="mt-3">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              ✅ Available
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="mt-3">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                              🔒 Coming Soon
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
