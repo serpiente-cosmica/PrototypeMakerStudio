@@ -21,6 +21,7 @@ const DynamicScreenConfig = ({
   onReset,
   isLoading = false,
   clientId,
+  approachId,
 }) => {
   // Verificar si existe un componente de configuración específico para esta pantalla
   const ConfigComponent = getScreenConfigComponent(screenId);
@@ -36,6 +37,7 @@ const DynamicScreenConfig = ({
         onReset={onReset}
         isLoading={isLoading}
         clientId={clientId}
+        approachId={approachId}
       />
     );
   }

@@ -11,6 +11,9 @@ import { useModal } from "../../../../hooks/useModal";
 import ScreenPreview from "../../../../components/ScreenPreview";
 import Modal from "../../../../components/common/Modal";
 
+// Importar todas las pantallas para que se registren
+import "../../../../components/screens";
+
 /**
  * Client Configuration Page
  * Permite configurar las pantallas específicas del cliente
@@ -24,9 +27,11 @@ const ClientConfigurationPage = () => {
     isLoading: configLoading,
     refetch: refetchConfig,
   } = useAppConfig(clientId);
-  const { screens, isLoading: screensLoading } = useApproachScreens(
-    config?.approach_id
-  );
+  const {
+    screens,
+    isLoading: screensLoading,
+    error: screensError,
+  } = useApproachScreens(config?.approach_id);
   const { uploadFile, isLoading: uploadLoading } = useFileUpload();
 
   const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
@@ -36,6 +41,12 @@ const ClientConfigurationPage = () => {
   // Hook para configuración específica por pantalla
   const currentScreen = screens[currentScreenIndex];
   const cachedConfig = screenConfigsCache[currentScreen?.screen_id];
+
+  // Debug logs
+  console.log("configure.js: config:", config);
+  console.log("configure.js: screens:", screens);
+  console.log("configure.js: currentScreen:", currentScreen);
+  console.log("configure.js: currentScreenIndex:", currentScreenIndex);
   const {
     screenConfig,
     isLoading: screenConfigLoading,
@@ -211,11 +222,27 @@ const ClientConfigurationPage = () => {
               {/* Mobile Preview Container */}
               <div className="bg-gray-100 rounded-lg p-4 flex justify-center">
                 <div className="w-80 h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">
-                  <ScreenPreview
-                    clientId={clientId}
-                    screenId={currentScreen?.screen_id}
-                    screenSettings={screenConfig}
-                  />
+                  {currentScreen ? (
+                    <ScreenPreview
+                      clientId={clientId}
+                      screenId={currentScreen.screen_id}
+                      screenSettings={screenConfig}
+                    />
+                  ) : (
+                    <div className="h-full flex items-center justify-center bg-gray-100">
+                      <div className="text-center text-gray-600">
+                        <p>Loading screens...</p>
+                        {screensLoading && (
+                          <p className="text-sm">Fetching from database...</p>
+                        )}
+                        {screensError && (
+                          <p className="text-sm text-red-600">
+                            Error: {screensError}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -286,6 +313,7 @@ const ClientConfigurationPage = () => {
                 onReset={resetToDefault}
                 isLoading={screenConfigLoading}
                 clientId={clientId}
+                approachId={config?.approach_id}
               />
             </div>
           </>

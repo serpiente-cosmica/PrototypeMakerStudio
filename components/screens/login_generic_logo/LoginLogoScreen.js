@@ -10,6 +10,7 @@ const LoginLogoScreen = ({
   clientId,
   config,
   screenId,
+  onNavigate,
   ...props
 }) => {
   if (!config) {
@@ -30,6 +31,18 @@ const LoginLogoScreen = ({
     "#ffffff";
   const logoSize = screenSettings?.logo_size || "150px";
   const logoPosition = screenSettings?.logo_position || "center";
+
+  // Configuración de navegación
+  const navigationConfig = screenSettings?.navigation_config || {};
+  const logoNavigation = navigationConfig?.logo_click;
+
+  const handleLogoClick = () => {
+    if (logoNavigation?.target_screen_id && onNavigate) {
+      console.log("🔄 Navigating to:", logoNavigation.target_screen_id);
+      onNavigate(logoNavigation.target_screen_id);
+    }
+    // Si no hay configuración de navegación, no hacer nada
+  };
 
   const getPositionClasses = () => {
     switch (logoPosition) {
@@ -64,7 +77,11 @@ const LoginLogoScreen = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            cursor: logoNavigation?.target_screen_id ? "pointer" : "default",
           }}
+          onClick={
+            logoNavigation?.target_screen_id ? handleLogoClick : undefined
+          }
         >
           <ImageTest
             src={logoUrl}
@@ -84,7 +101,11 @@ const LoginLogoScreen = ({
             color: "#6b7280",
             fontSize: "14px",
             textAlign: "center",
+            cursor: logoNavigation?.target_screen_id ? "pointer" : "default",
           }}
+          onClick={
+            logoNavigation?.target_screen_id ? handleLogoClick : undefined
+          }
         >
           No Logo Available
         </div>

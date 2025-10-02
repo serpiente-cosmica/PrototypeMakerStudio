@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAppConfig } from "../../hooks/useAppConfig";
 import { useApproachScreens } from "../../hooks/useApproachScreens";
+import { useScreenConfig } from "../../hooks/useScreenConfig";
 import ScreenPreview from "../../components/ScreenPreview";
+
+// Importar todas las pantallas para que se registren
+import "../../components/screens";
 
 /**
  * Main demo page - shows client screens as a real mobile app
@@ -18,21 +22,48 @@ const DemoPage = () => {
 
   // Hook para navegación entre pantallas
   const availableScreenIds = screens.map((screen) => screen.screen_id);
-  const currentScreen = screens.length > 0 ? screens[0].screen_id : null;
 
-  const [screenSettings, setScreenSettings] = useState({});
+  // Encontrar la pantalla con el order_index más bajo (primera pantalla)
+  const firstScreenIndex =
+    screens.length > 0
+      ? screens.findIndex(
+          (screen) =>
+            screen.order_index ===
+            Math.min(...screens.map((s) => s.order_index))
+        )
+      : 0;
 
-  // Load initial screen settings from client config
+  const [currentScreenIndex, setCurrentScreenIndex] =
+    useState(firstScreenIndex);
+  const currentScreen =
+    screens.length > 0 ? screens[currentScreenIndex]?.screen_id : null;
+
+  // Actualizar currentScreenIndex cuando cambien las pantallas
   useEffect(() => {
-    if (config) {
-      setScreenSettings({
-        logo_url: config.logoUrl || "",
-        background_color: config.colors_json?.background || "#ffffff",
-      });
+    if (screens.length > 0) {
+      const newFirstScreenIndex = screens.findIndex(
+        (screen) =>
+          screen.order_index === Math.min(...screens.map((s) => s.order_index))
+      );
+      setCurrentScreenIndex(newFirstScreenIndex);
     }
-  }, [config]);
+  }, [screens]);
 
-  if (configLoading || screensLoading) {
+  // Hook para cargar configuración específica de la pantalla actual
+  const { screenConfig: screenSettings, isLoading: screenConfigLoading } =
+    useScreenConfig(clientId, currentScreen, config);
+
+  // Función para navegar entre pantallas
+  const handleNavigate = (targetScreenId) => {
+    const targetIndex = screens.findIndex(
+      (screen) => screen.screen_id === targetScreenId
+    );
+    if (targetIndex !== -1) {
+      setCurrentScreenIndex(targetIndex);
+    }
+  };
+
+  if (configLoading || screensLoading || screenConfigLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -68,6 +99,8 @@ const DemoPage = () => {
               clientId={clientId}
               screenId={currentScreen}
               screenSettings={screenSettings}
+              onNavigate={handleNavigate}
+              availableScreens={screens}
             />
           ) : (
             <div className="h-full flex items-center justify-center bg-gray-100">

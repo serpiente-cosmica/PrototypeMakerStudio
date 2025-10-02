@@ -4,6 +4,7 @@
  */
 import React from "react";
 import { getScreenConfigComponent } from "../../utils/screenRegistry";
+import { useApproachScreens } from "../../hooks/useApproachScreens";
 
 const ConfigWrapper = ({
   screenId,
@@ -12,9 +13,11 @@ const ConfigWrapper = ({
   onSave,
   onReset,
   isLoading = false,
+  approachId,
   ...props
 }) => {
   const ConfigComponent = getScreenConfigComponent(screenId);
+  const { screens: availableScreens } = useApproachScreens(approachId);
 
   if (!ConfigComponent) {
     console.error(`Config component not found for screenId: ${screenId}`);
@@ -36,6 +39,7 @@ const ConfigWrapper = ({
     onSave,
     onReset,
     isLoading,
+    availableScreens,
     ...props,
   };
 

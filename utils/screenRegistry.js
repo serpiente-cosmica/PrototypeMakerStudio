@@ -30,7 +30,7 @@ export const registerScreen = (screenId, screenData) => {
     ...screenData,
   });
 
-  console.log(`✅ Screen ${screenId} registered successfully`);
+  console.log(`✅ Screen ${screenId} registered successfully. Total screens: ${screenRegistry.size}`);
 };
 
 /**
@@ -57,6 +57,9 @@ export const getAllScreens = () => {
  */
 export const getScreenComponent = (screenId) => {
   const screen = getScreen(screenId);
+  if (!screen) {
+    console.warn(`Screen ${screenId} not found in registry. Available screens:`, Array.from(screenRegistry.keys()));
+  }
   return screen ? screen.component : null;
 };
 

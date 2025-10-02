@@ -13,6 +13,7 @@ const LoginLogoConfig = ({
   onReset,
   isLoading = false,
   clientId,
+  availableScreens = [],
 }) => {
   const [localConfig, setLocalConfig] = useState(screenConfig);
   const { uploadFile, isLoading: uploadLoading } = useFileUpload();
@@ -25,8 +26,17 @@ const LoginLogoConfig = ({
   const handleFieldChange = (field, value) => {
     const newConfig = { ...localConfig, [field]: value };
     setLocalConfig(newConfig);
-    // Llamar inmediatamente para preview en tiempo real
-    onConfigChange(newConfig);
+
+    // Para login_generic_logo, solo llamar onConfigChange para campos específicos
+    // que deben guardarse en client_configs (como logo_url)
+    if (field === "logo_url") {
+      onConfigChange(newConfig);
+    } else {
+      // Para otros campos (como navigation_config), solo actualizar localmente
+      console.log(
+        `ℹ️ login_generic_logo: Field ${field} updated locally only (not saved to DB)`
+      );
+    }
   };
 
   const handleFileChange = async (e) => {
@@ -44,6 +54,35 @@ const LoginLogoConfig = ({
 
   const handleReset = () => {
     onReset();
+  };
+
+  const handleNavigationChange = (elementId, targetScreenId) => {
+    const currentNavigation = localConfig.navigation_config || {};
+    const newNavigation = {
+      ...currentNavigation,
+      [elementId]: {
+        target_screen_id: targetScreenId || null,
+        enabled: !!targetScreenId,
+      },
+    };
+
+    // Si no hay target_screen_id, eliminar el elemento
+    if (!targetScreenId) {
+      delete newNavigation[elementId];
+    }
+
+    const newConfig = {
+      ...localConfig,
+      navigation_config: newNavigation,
+    };
+
+    setLocalConfig(newConfig);
+
+    // Para login_generic_logo, llamar onConfigChange para guardar navigation_config
+    console.log(
+      "🔄 login_generic_logo: Navigation config will be saved to client_screen_configs"
+    );
+    onConfigChange(newConfig);
   };
 
   return (
@@ -109,6 +148,43 @@ const LoginLogoConfig = ({
           <option value="top">Top</option>
           <option value="bottom">Bottom</option>
         </select>
+      </div>
+
+      {/* Configuración de navegación */}
+      <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+        <h4 className="text-sm font-medium text-gray-800 mb-3">
+          🧭 Navigation Configuration
+        </h4>
+
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3">
+            <label className="w-24 text-sm text-gray-700">Logo →</label>
+            <select
+              value={
+                localConfig.navigation_config?.logo_click?.target_screen_id ||
+                ""
+              }
+              onChange={(e) =>
+                handleNavigationChange("logo_click", e.target.value)
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+              <option value="">No navigation</option>
+              {availableScreens
+                .filter((screen) => screen.screen_id !== screenId)
+                .map((screen) => (
+                  <option key={screen.screen_id} value={screen.screen_id}>
+                    {screen.app_screens?.name || screen.screen_id}
+                  </option>
+                ))}
+            </select>
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-500 mt-2">
+          Choose which elements should be clickable and where they should
+          navigate. Leave empty for no navigation.
+        </p>
       </div>
 
       {/* Información sobre configuración */}

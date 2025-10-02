@@ -40,6 +40,7 @@ export const useAppConfig = (clientId) => {
       }
 
       if (data) {
+        console.log("useAppConfig: Client data loaded:", data);
         const finalConfig = {
           clientId: data.client_id,
           appName: data.app_name,

@@ -37,7 +37,9 @@ const ScreenPreview = ({
   }
 
   // Verificar si la pantalla está disponible usando el nuevo sistema
-  if (!getScreenComponent(screenId)) {
+  const ScreenComponent = getScreenComponent(screenId);
+  if (!ScreenComponent) {
+    console.warn(`Screen ${screenId} not found in registry`);
     return (
       <div className="h-full flex items-center justify-center bg-gray-100">
         <div className="text-center">

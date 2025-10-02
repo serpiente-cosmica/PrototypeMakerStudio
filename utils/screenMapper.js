@@ -8,8 +8,7 @@ import {
 } from "./screenRegistry";
 
 // Importar todas las pantallas para que se registren automáticamente
-import "../components/screens/login_generic_logo";
-import "../components/screens/login_generic_form";
+import "../components/screens";
 
 /**
  * Obtiene el componente de una pantalla usando el sistema de registro

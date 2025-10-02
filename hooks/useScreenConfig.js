@@ -48,16 +48,31 @@ export const useScreenConfig = (
       const defaultConfig = getDefaultConfig();
 
       if (screenId === "login_generic_logo") {
-        // Para login_generic_logo, NO consultar client_screen_configs
-        // Solo usar configuración del cliente + defaults
+        // Para login_generic_logo, cargar navigation_config desde client_screen_configs
         console.log(
-          "ℹ️ login_generic_logo: Skipping client_screen_configs load"
+          "ℹ️ login_generic_logo: Loading navigation_config from client_screen_configs"
         );
+
+        const { data: screenData, error: fetchError } = await supabaseClient
+          .from("client_screen_configs")
+          .select("settings_json")
+          .eq("client_id", clientId)
+          .eq("screen_id", screenId)
+          .maybeSingle();
+
+        if (fetchError) {
+          console.warn("Error loading navigation config:", fetchError);
+        }
+
+        const navigationConfig =
+          screenData?.settings_json?.navigation_config || {};
+
         setScreenConfig({
           ...defaultConfig,
           logo_url: clientConfig.logoUrl || defaultConfig.logo_url, // Logo del cliente
           logo_size: "150px", // Default size
           logo_position: "center", // Default position
+          navigation_config: navigationConfig, // Navigation config desde DB
         });
       } else {
         // Para otras pantallas, consultar client_screen_configs normalmente
@@ -102,9 +117,9 @@ export const useScreenConfig = (
         setIsLoading(true);
         setError(null);
 
-        // Para login_generic_logo, NO guardar en client_screen_configs
+        // Para login_generic_logo, manejar logo_url y navigation_config por separado
         if (screenId === "login_generic_logo") {
-          // Solo actualizar client_configs si se cambió el logo_url
+          // 1. Actualizar client_configs si se cambió el logo_url
           if (
             newConfig.logo_url &&
             newConfig.logo_url !== clientConfig.logoUrl
@@ -119,12 +134,49 @@ export const useScreenConfig = (
               .eq("client_id", clientId);
           }
 
-          // NO guardar nada en client_screen_configs para login_generic_logo
-          console.log(
-            "ℹ️ login_generic_logo: Skipping client_screen_configs save"
-          );
+          // 2. Guardar navigation_config en client_screen_configs (excepción especial)
+          if (newConfig.navigation_config) {
+            console.log("🔄 Saving navigation_config for login_generic_logo");
+
+            // Verificar si ya existe configuración para esta pantalla
+            const { data: existingData } = await supabaseClient
+              .from("client_screen_configs")
+              .select("id")
+              .eq("client_id", clientId)
+              .eq("screen_id", screenId)
+              .maybeSingle();
+
+            const configData = {
+              client_id: clientId,
+              screen_id: screenId,
+              settings_json: { navigation_config: newConfig.navigation_config },
+              updated_at: new Date().toISOString(),
+            };
+
+            let result;
+            if (existingData) {
+              // Actualizar configuración existente
+              result = await supabaseClient
+                .from("client_screen_configs")
+                .update(configData)
+                .eq("id", existingData.id);
+            } else {
+              // Crear nueva configuración
+              result = await supabaseClient
+                .from("client_screen_configs")
+                .insert({
+                  ...configData,
+                  created_at: new Date().toISOString(),
+                });
+            }
+
+            if (result.error) {
+              throw result.error;
+            }
+          }
+
           setScreenConfig(newConfig);
-          return true; // Retornar éxito sin guardar en client_screen_configs
+          return true;
         }
 
         // Para otras pantallas, verificar si ya existe configuración
