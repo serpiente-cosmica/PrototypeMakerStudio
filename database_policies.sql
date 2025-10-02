@@ -1,6 +1,9 @@
 -- Políticas RLS para las tablas de la aplicación Demo Customizer
 -- Ejecuta estos comandos en tu dashboard de Supabase > SQL Editor
 
+-- 0. Verificar que la tabla client_screen_configs existe con el campo correcto
+-- La tabla ya existe con el campo 'settings_json', no necesitamos crearla
+
 -- 1. Habilitar RLS en todas las tablas
 ALTER TABLE public.client_configs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.client_screen_configs ENABLE ROW LEVEL SECURITY;

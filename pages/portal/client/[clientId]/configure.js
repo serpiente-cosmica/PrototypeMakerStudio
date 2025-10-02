@@ -4,6 +4,9 @@ import { useAppConfig } from "../../../../hooks/useAppConfig";
 import { useApproachScreens } from "../../../../hooks/useApproachScreens";
 import { useFileUpload } from "../../../../hooks/useFileUpload";
 import { useUpdateClientConfig } from "../../../../hooks/useUpdateClientConfig";
+import { useScreenConfig } from "../../../../hooks/useScreenConfig";
+import DynamicScreenConfig from "../../../../components/DynamicScreenConfig";
+import { useScreenNavigation } from "../../../../hooks/useScreenNavigation";
 import { useModal } from "../../../../hooks/useModal";
 import ScreenPreview from "../../../../components/ScreenPreview";
 import Modal from "../../../../components/common/Modal";
@@ -26,9 +29,100 @@ const ClientConfigurationPage = () => {
   );
   const { uploadFile, isLoading: uploadLoading } = useFileUpload();
 
-  const [selectedScreen, setSelectedScreen] = useState(null);
-  const [screenSettings, setScreenSettings] = useState({});
+  const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
   const configLoadedRef = useRef(false);
+  const [screenConfigsCache, setScreenConfigsCache] = useState({});
+
+  // Hook para configuración específica por pantalla
+  const currentScreen = screens[currentScreenIndex];
+  const cachedConfig = screenConfigsCache[currentScreen?.screen_id];
+  const {
+    screenConfig,
+    isLoading: screenConfigLoading,
+    error: screenConfigError,
+    saveScreenConfig,
+    updateScreenConfig,
+    resetToDefault,
+  } = useScreenConfig(clientId, currentScreen?.screen_id, config, cachedConfig);
+
+  // Funciones de navegación tipo carrusel con guardado automático
+  const handleNextScreen = async () => {
+    if (currentScreenIndex < screens.length - 1) {
+      // Guardar configuración actual antes de cambiar
+      await saveCurrentScreenConfig();
+      setCurrentScreenIndex(currentScreenIndex + 1);
+    }
+  };
+
+  const handlePreviousScreen = async () => {
+    if (currentScreenIndex > 0) {
+      // Guardar configuración actual antes de cambiar
+      await saveCurrentScreenConfig();
+      setCurrentScreenIndex(currentScreenIndex - 1);
+    }
+  };
+
+  // Función para guardar configuración actual automáticamente
+  const saveCurrentScreenConfig = async () => {
+    if (!currentScreen?.screen_id || !screenConfig) return;
+
+    try {
+      // Si hay un archivo temporal, subirlo primero
+      if (screenConfig.logo_url && screenConfig.logo_url.startsWith("blob:")) {
+        const response = await fetch(screenConfig.logo_url);
+        const blob = await response.blob();
+        const file = new File([blob], "logo.png", { type: blob.type });
+        const uploadedUrl = await uploadFile(file, clientId);
+
+        // Actualizar configuración con URL real
+        const updatedConfig = { ...screenConfig, logo_url: uploadedUrl };
+        await saveScreenConfig(updatedConfig, false); // No mostrar mensaje de éxito
+      } else {
+        await saveScreenConfig(screenConfig, false); // No mostrar mensaje de éxito
+      }
+    } catch (error) {
+      console.error("Error auto-saving screen config:", error);
+      // No mostrar error al usuario, solo log
+    }
+  };
+
+  const handleConfigChange = (newConfig) => {
+    updateScreenConfig(newConfig);
+    // Guardar en cache local
+    if (currentScreen?.screen_id) {
+      setScreenConfigsCache((prev) => ({
+        ...prev,
+        [currentScreen.screen_id]: newConfig,
+      }));
+    }
+  };
+
+  const handleSaveScreenConfig = async (newConfig) => {
+    try {
+      // Si hay un archivo temporal, subirlo primero
+      if (newConfig.logo_url && newConfig.logo_url.startsWith("blob:")) {
+        // Convertir blob URL a archivo y subirlo
+        const response = await fetch(newConfig.logo_url);
+        const blob = await response.blob();
+        const file = new File([blob], "logo.png", { type: blob.type });
+
+        const uploadedUrl = await uploadFile(file, clientId);
+        newConfig.logo_url = uploadedUrl;
+      }
+
+      const success = await saveScreenConfig(newConfig);
+      if (success) {
+        showSuccess("Screen configuration saved successfully!");
+        // Refrescar la configuración para mantener los cambios
+        await refetchConfig();
+      } else {
+        showError("Error saving screen configuration. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error saving screen config:", error);
+      showError("Error saving screen configuration. Please try again.");
+    }
+  };
 
   const {
     updateClientConfig,
@@ -46,69 +140,10 @@ const ClientConfigurationPage = () => {
   } = useModal();
 
   useEffect(() => {
-    if (screens.length > 0 && !selectedScreen) {
-      setSelectedScreen(screens[0]); // Seleccionar automáticamente la primera pantalla
+    if (screens.length > 0 && currentScreenIndex >= screens.length) {
+      setCurrentScreenIndex(0); // Reset if current index is out of bounds
     }
-  }, [screens, selectedScreen]);
-
-  // Cargar configuración del cliente cuando se carga
-  useEffect(() => {
-    if (config && !configLoadedRef.current) {
-      setScreenSettings({
-        logo_url: config.logoUrl || null,
-        background_color: config.colors_json?.background || "#ffffff",
-      });
-      configLoadedRef.current = true;
-    }
-  }, [config]);
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        const uploadedUrl = await uploadFile(file, clientId);
-        setScreenSettings((prev) => ({
-          ...prev,
-          logo_url: uploadedUrl,
-        }));
-        // No mostrar modal, solo actualizar el logo en la pantalla
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        showError("Error uploading file. Please try again.");
-      }
-    }
-  };
-
-  const handleSaveSettings = async () => {
-    if (!selectedScreen) {
-      showWarning("No screen selected");
-      return;
-    }
-
-    try {
-      // Actualizar la configuración del cliente en client_configs
-      const updates = {
-        logo_url: screenSettings.logo_url,
-        colors_json: {
-          ...config.colors_json, // Mantener otros colores existentes
-          background: screenSettings.background_color,
-        },
-      };
-
-      const success = await updateClientConfig(clientId, updates);
-
-      if (success) {
-        showSuccess("Settings saved successfully!");
-        // Refrescar la configuración para que la demo la vea
-        await refetchConfig();
-      } else {
-        showError("Error saving settings. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error saving settings:", error);
-      showError("Error saving settings. Please try again.");
-    }
-  };
+  }, [screens, currentScreenIndex]);
 
   if (configLoading || screensLoading) {
     return (
@@ -166,10 +201,10 @@ const ClientConfigurationPage = () => {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-gray-800">
-                  Preview: {selectedScreen ? selectedScreen.name : "Loading..."}
+                  Preview: {currentScreen ? currentScreen.name : "Loading..."}
                 </h2>
                 <div className="text-sm text-gray-500">
-                  Screen ID: {selectedScreen ? selectedScreen.screen_id : "N/A"}
+                  Screen ID: {currentScreen ? currentScreen.screen_id : "N/A"}
                 </div>
               </div>
 
@@ -178,134 +213,80 @@ const ClientConfigurationPage = () => {
                 <div className="w-80 h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">
                   <ScreenPreview
                     clientId={clientId}
-                    screenId={selectedScreen?.screen_id || "login_generic_logo"}
-                    screenSettings={screenSettings}
+                    screenId={currentScreen?.screen_id}
+                    screenSettings={screenConfig}
                   />
                 </div>
+              </div>
+
+              {/* Navigation Controls - Carrusel */}
+              <div className="mt-4 flex justify-center items-center space-x-4">
+                <button
+                  onClick={handlePreviousScreen}
+                  disabled={currentScreenIndex === 0}
+                  className={`px-4 py-2 rounded-md text-sm font-medium ${
+                    currentScreenIndex === 0
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-600 text-white hover:bg-gray-700"
+                  }`}
+                >
+                  ← Back
+                </button>
+
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">
+                    {currentScreenIndex + 1} of {screens.length}
+                  </span>
+                  <div className="flex space-x-1">
+                    {screens.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full ${
+                          index === currentScreenIndex
+                            ? "bg-blue-600"
+                            : "bg-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleNextScreen}
+                  disabled={currentScreenIndex === screens.length - 1}
+                  className={`px-4 py-2 rounded-md text-sm font-medium ${
+                    currentScreenIndex === screens.length - 1
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
+                >
+                  Next →
+                </button>
               </div>
             </div>
 
             {/* Configuration Panel */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Screen Configuration
+                Screen Configuration:{" "}
+                {currentScreen ? currentScreen.name : "Loading..."}
               </h3>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Logo
-                  </label>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">
-                        Upload Logo File
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        disabled={uploadLoading}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      {uploadLoading && (
-                        <p className="text-xs text-blue-600 mt-1">
-                          Uploading...
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-center text-gray-500 text-sm">OR</div>
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">
-                        Logo URL
-                      </label>
-                      <input
-                        type="url"
-                        value={screenSettings.logo_url || ""}
-                        onChange={(e) =>
-                          setScreenSettings((prev) => ({
-                            ...prev,
-                            logo_url: e.target.value,
-                          }))
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="https://example.com/logo.png"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Leave empty to use the client's logo from creation
-                  </p>
+              {screenConfigError && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
+                  <p className="text-red-600 text-sm">{screenConfigError}</p>
                 </div>
+              )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Background Color
-                  </label>
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="color"
-                      value={screenSettings.background_color || "#ffffff"}
-                      onChange={(e) =>
-                        setScreenSettings((prev) => ({
-                          ...prev,
-                          background_color: e.target.value,
-                        }))
-                      }
-                      className="w-16 h-10 border border-gray-300 rounded cursor-pointer"
-                    />
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={screenSettings.background_color || "#ffffff"}
-                        onChange={(e) =>
-                          setScreenSettings((prev) => ({
-                            ...prev,
-                            background_color: e.target.value,
-                          }))
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="#ffffff"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Current: {screenSettings.background_color || "#ffffff"}
-                  </p>
-                </div>
-
-                {updateError && (
-                  <div className="bg-red-50 border border-red-200 rounded-md p-3 mt-4">
-                    <p className="text-red-600 text-sm">{updateError}</p>
-                  </div>
-                )}
-
-                <div className="flex justify-end space-x-3">
-                  <button
-                    onClick={() => {
-                      setScreenSettings({
-                        logo_url: config.logo_url || "",
-                        background_color:
-                          config.colors_json?.background || "#ffffff",
-                      });
-                    }}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                  >
-                    Reset
-                  </button>
-                  <button
-                    onClick={handleSaveSettings}
-                    disabled={updateLoading || uploadLoading}
-                    className={`px-6 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors ${
-                      updateLoading || uploadLoading
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700"
-                    }`}
-                  >
-                    {updateLoading ? "Saving..." : "Save Settings"}
-                  </button>
-                </div>
-              </div>
+              <DynamicScreenConfig
+                screenId={currentScreen?.screen_id}
+                screenConfig={screenConfig}
+                onConfigChange={handleConfigChange}
+                onSave={handleSaveScreenConfig}
+                onReset={resetToDefault}
+                isLoading={screenConfigLoading}
+                clientId={clientId}
+              />
             </div>
           </>
         </div>

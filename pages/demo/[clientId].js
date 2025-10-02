@@ -16,7 +16,10 @@ const DemoPage = () => {
     config?.approach_id
   );
 
-  const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
+  // Hook para navegación entre pantallas
+  const availableScreenIds = screens.map((screen) => screen.screen_id);
+  const currentScreen = screens.length > 0 ? screens[0].screen_id : null;
+
   const [screenSettings, setScreenSettings] = useState({});
 
   // Load initial screen settings from client config
@@ -28,23 +31,6 @@ const DemoPage = () => {
       });
     }
   }, [config]);
-
-  // Set initial selected screen
-  useEffect(() => {
-    if (screens.length > 0 && currentScreenIndex >= screens.length) {
-      setCurrentScreenIndex(0); // Reset if current index is out of bounds
-    }
-  }, [screens, currentScreenIndex]);
-
-  const handleNextScreen = () => {
-    setCurrentScreenIndex((prevIndex) => (prevIndex + 1) % screens.length);
-  };
-
-  const handlePreviousScreen = () => {
-    setCurrentScreenIndex((prevIndex) =>
-      prevIndex === 0 ? screens.length - 1 : prevIndex - 1
-    );
-  };
 
   if (configLoading || screensLoading) {
     return (
@@ -72,8 +58,6 @@ const DemoPage = () => {
     );
   }
 
-  const currentScreen = screens[currentScreenIndex];
-
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Marco de la aplicación móvil */}
@@ -82,7 +66,7 @@ const DemoPage = () => {
           {currentScreen ? (
             <ScreenPreview
               clientId={clientId}
-              screenId={currentScreen.screen_id}
+              screenId={currentScreen}
               screenSettings={screenSettings}
             />
           ) : (
@@ -90,54 +74,6 @@ const DemoPage = () => {
               <p className="text-gray-600">
                 No screens available for this approach.
               </p>
-            </div>
-          )}
-
-          {/* Controles de navegación */}
-          {screens.length > 1 && (
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
-              <button
-                onClick={handlePreviousScreen}
-                className="p-2 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 focus:outline-none"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-              {screens.map((_, index) => (
-                <span
-                  key={index}
-                  className={`block w-2 h-2 rounded-full mx-1 ${
-                    index === currentScreenIndex ? "bg-blue-600" : "bg-gray-300"
-                  }`}
-                ></span>
-              ))}
-              <button
-                onClick={handleNextScreen}
-                className="p-2 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 focus:outline-none"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
             </div>
           )}
         </div>

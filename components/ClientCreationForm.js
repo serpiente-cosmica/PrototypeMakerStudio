@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { useCreateClient } from "../hooks/useCreateClient";
 import { useFileUpload } from "../hooks/useFileUpload";
+import { DEFAULT_BRAND_COLORS } from "../utils/defaultConfig";
 
 /**
  * ClientCreationForm Component
@@ -19,12 +20,7 @@ const ClientCreationForm = ({ approachId, approachName, onClose }) => {
   const [formData, setFormData] = useState({
     client_id: "",
     app_name: "",
-    colors_json: {
-      primary: "#3b82f6",
-      secondary: "#64748b",
-      accent: "#f59e0b",
-      background: "#ffffff",
-    },
+    colors_json: DEFAULT_BRAND_COLORS, // Usar colores por defecto de Advanta
     logo_url: "",
     logo_file: null,
   });
@@ -155,6 +151,12 @@ const ClientCreationForm = ({ approachId, approachName, onClose }) => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Logo
               </label>
+              <div className="bg-green-50 border border-green-200 rounded-md p-3 mb-4">
+                <p className="text-xs text-green-600">
+                  ℹ️ If you don't provide a logo, the default Advanta logo will
+                  be used automatically.
+                </p>
+              </div>
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">
@@ -191,6 +193,12 @@ const ClientCreationForm = ({ approachId, approachName, onClose }) => {
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Brand Colors
               </label>
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                <p className="text-xs text-blue-600">
+                  ℹ️ These are the default Advanta brand colors. They will be
+                  applied to all screens unless you change them.
+                </p>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">

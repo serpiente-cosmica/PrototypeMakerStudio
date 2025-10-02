@@ -1,5 +1,6 @@
 import { useAppConfig } from "../hooks/useAppConfig";
 import { getScreenComponent } from "../utils/screenMapper";
+import ScreenWrapper from "./common/ScreenWrapper";
 
 /**
  * ScreenPreview Component
@@ -8,7 +9,13 @@ import { getScreenComponent } from "../utils/screenMapper";
  * @param {string} props.clientId - ID del cliente
  * @param {string} props.screenId - ID de la pantalla a renderizar
  */
-const ScreenPreview = ({ clientId, screenId, screenSettings = {} }) => {
+const ScreenPreview = ({
+  clientId,
+  screenId,
+  screenSettings = {},
+  onNavigate,
+  availableScreens = [],
+}) => {
   const { config, isLoading } = useAppConfig(clientId);
 
   if (isLoading) {
@@ -29,14 +36,16 @@ const ScreenPreview = ({ clientId, screenId, screenSettings = {} }) => {
     );
   }
 
-  const ScreenComponent = getScreenComponent(screenId);
-
-  if (!ScreenComponent) {
+  // Verificar si la pantalla está disponible usando el nuevo sistema
+  if (!getScreenComponent(screenId)) {
     return (
       <div className="h-full flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <p className="text-gray-600 mb-2">Screen not implemented</p>
           <p className="text-gray-500 text-sm">Screen ID: {screenId}</p>
+          <p className="text-gray-500 text-xs">
+            Please check if the screen is properly registered.
+          </p>
         </div>
       </div>
     );
@@ -44,10 +53,13 @@ const ScreenPreview = ({ clientId, screenId, screenSettings = {} }) => {
 
   return (
     <div className="h-full bg-white overflow-hidden">
-      <ScreenComponent
+      <ScreenWrapper
+        screenId={screenId}
         screenSettings={screenSettings}
         clientId={clientId}
         config={config}
+        onNavigate={onNavigate}
+        availableScreens={availableScreens}
       />
     </div>
   );

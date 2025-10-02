@@ -18,7 +18,7 @@ const ImageTest = ({ src, alt = "Test Image" }) => {
   };
 
   return (
-    <div className="w-[150px] h-[150px] flex items-center justify-center">
+    <div className="flex items-center justify-center w-full h-full">
       {imageError ? (
         <div className="text-center text-red-500 text-xs">
           <p>❌ Failed to load</p>

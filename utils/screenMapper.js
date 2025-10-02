@@ -1,43 +1,46 @@
-import LoginLogoScreen from "../components/screens/LoginLogoScreen";
-import HomeDashboardScreen from "../components/screens/HomeDashboardScreen";
-import ProfileSettingsScreen from "../components/screens/ProfileSettingsScreen";
-
 /**
- * Mapeo de IDs de pantalla con sus componentes correspondientes
- * Este archivo conecta los IDs de la base de datos con los componentes React
+ * ScreenMapper - Sistema de mapeo de pantallas usando el registro
+ * Ahora usa el sistema de registro en lugar de imports directos
  */
-export const SCREEN_COMPONENTS = {
-  login_generic_logo: LoginLogoScreen,
-  home_dashboard: HomeDashboardScreen,
-  profile_settings: ProfileSettingsScreen,
-  // Aquí se pueden agregar más pantallas conforme se vayan creando
-  // 'login_form': LoginFormScreen,
-  // 'dashboard_main': DashboardMainScreen,
-  // etc...
-};
+import {
+  getScreenComponent as getRegisteredScreenComponent,
+  getAllScreens,
+} from "./screenRegistry";
+
+// Importar todas las pantallas para que se registren automáticamente
+import "../components/screens/login_generic_logo";
+import "../components/screens/login_generic_form";
 
 /**
- * Función para obtener un componente de pantalla por su ID
- * @param {string} screenId - ID de la pantalla desde la base de datos
- * @returns {React.Component|null} Componente correspondiente o null si no existe
+ * Obtiene el componente de una pantalla usando el sistema de registro
+ * @param {string} screenId - ID de la pantalla
+ * @returns {React.Component|null} Componente de la pantalla
  */
 export const getScreenComponent = (screenId) => {
-  return SCREEN_COMPONENTS[screenId] || null;
+  return getRegisteredScreenComponent(screenId);
 };
 
 /**
- * Función para verificar si existe un componente para un ID de pantalla
- * @param {string} screenId - ID de la pantalla desde la base de datos
- * @returns {boolean} true si existe el componente, false si no
+ * Verifica si una pantalla está disponible
+ * @param {string} screenId - ID de la pantalla
+ * @returns {boolean} True si la pantalla está disponible
  */
 export const hasScreenComponent = (screenId) => {
-  return screenId in SCREEN_COMPONENTS;
+  return getScreenComponent(screenId) !== null;
 };
 
 /**
- * Lista de todos los IDs de pantalla disponibles
- * @returns {string[]} Array con todos los IDs de pantalla disponibles
+ * Obtiene todas las pantallas disponibles
+ * @returns {Array} Array de IDs de pantallas disponibles
  */
 export const getAvailableScreenIds = () => {
-  return Object.keys(SCREEN_COMPONENTS);
+  return getAllScreens().map((screen) => screen.id);
+};
+
+/**
+ * Obtiene información detallada de todas las pantallas
+ * @returns {Array} Array con información detallada de las pantallas
+ */
+export const getAllScreenInfo = () => {
+  return getAllScreens();
 };
