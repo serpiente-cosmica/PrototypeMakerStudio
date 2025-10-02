@@ -27,9 +27,14 @@ const LoginLogoConfig = ({
     const newConfig = { ...localConfig, [field]: value };
     setLocalConfig(newConfig);
 
-    // Para login_generic_logo, solo llamar onConfigChange para campos específicos
-    // que deben guardarse en client_configs (como logo_url)
-    if (field === "logo_url") {
+    // Para login_generic_logo, llamar onConfigChange para campos que se guardan en client_configs
+    if (
+      field === "logo_url" ||
+      field === "background_color" ||
+      field === "primary_color" ||
+      field === "secondary_color" ||
+      field === "accent_color"
+    ) {
       onConfigChange(newConfig);
     } else {
       // Para otros campos (como navigation_config), solo actualizar localmente
@@ -150,6 +155,120 @@ const LoginLogoConfig = ({
         </select>
       </div>
 
+      {/* Configuración de colores */}
+      <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+        <h4 className="text-sm font-medium text-gray-800 mb-3">
+          🎨 Color Configuration
+        </h4>
+
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">
+              Background Color
+            </label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={localConfig.background_color || "#ffffff"}
+                onChange={(e) =>
+                  handleFieldChange("background_color", e.target.value)
+                }
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={localConfig.background_color || "#ffffff"}
+                onChange={(e) =>
+                  handleFieldChange("background_color", e.target.value)
+                }
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                placeholder="#ffffff"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">
+              Primary Color
+            </label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={localConfig.primary_color || "#017755"}
+                onChange={(e) =>
+                  handleFieldChange("primary_color", e.target.value)
+                }
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={localConfig.primary_color || "#017755"}
+                onChange={(e) =>
+                  handleFieldChange("primary_color", e.target.value)
+                }
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                placeholder="#017755"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">
+              Secondary Color
+            </label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={localConfig.secondary_color || "#64748b"}
+                onChange={(e) =>
+                  handleFieldChange("secondary_color", e.target.value)
+                }
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={localConfig.secondary_color || "#64748b"}
+                onChange={(e) =>
+                  handleFieldChange("secondary_color", e.target.value)
+                }
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                placeholder="#64748b"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">
+              Accent Color
+            </label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={localConfig.accent_color || "#f97316"}
+                onChange={(e) =>
+                  handleFieldChange("accent_color", e.target.value)
+                }
+                className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={localConfig.accent_color || "#f97316"}
+                onChange={(e) =>
+                  handleFieldChange("accent_color", e.target.value)
+                }
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                placeholder="#f97316"
+              />
+            </div>
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-500 mt-2">
+          These colors will be applied to the entire client configuration and
+          can be used across all screens.
+        </p>
+      </div>
+
       {/* Configuración de navegación */}
       <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
         <h4 className="text-sm font-medium text-gray-800 mb-3">
@@ -184,18 +303,6 @@ const LoginLogoConfig = ({
         <p className="text-xs text-gray-500 mt-2">
           Choose which elements should be clickable and where they should
           navigate. Leave empty for no navigation.
-        </p>
-      </div>
-
-      {/* Información sobre configuración */}
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-        <h4 className="text-sm font-medium text-blue-800 mb-2">
-          ℹ️ Screen Configuration
-        </h4>
-        <p className="text-xs text-blue-600">
-          You can change the logo image, size, and position for this screen.
-          Background color and brand colors are managed in the client's main
-          configuration.
         </p>
       </div>
 

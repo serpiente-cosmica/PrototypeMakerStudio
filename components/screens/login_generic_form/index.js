@@ -14,8 +14,9 @@ const defaultConfig = {
   forgot_password_text: "Forgot Password?",
   new_account_text: "No account yet? Tap here to verify your eligibility.",
   button_radius: "12px",
-  button_color: "#017755", // Color verde de Figma
+  button_color: "#017755", // Color verde de Figma (se puede sobrescribir)
   app_logo_url: "", // Campo para imagen del formulario de login
+  // Nota: Los colores de fondo, primario y secundario se toman de la configuración global del cliente
 };
 
 // Metadatos de la pantalla

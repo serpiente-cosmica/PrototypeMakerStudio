@@ -54,7 +54,13 @@ const ClientConfigurationPage = () => {
     saveScreenConfig,
     updateScreenConfig,
     resetToDefault,
-  } = useScreenConfig(clientId, currentScreen?.screen_id, config, cachedConfig);
+  } = useScreenConfig(
+    clientId,
+    currentScreen?.screen_id,
+    config,
+    cachedConfig,
+    refetchConfig
+  );
 
   // Funciones de navegación tipo carrusel con guardado automático
   const handleNextScreen = async () => {

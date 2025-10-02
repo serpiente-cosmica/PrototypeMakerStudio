@@ -19,7 +19,8 @@ export const useScreenConfig = (
   clientId,
   screenId,
   clientConfig = {},
-  cachedConfig = null
+  cachedConfig = null,
+  refetchClientConfig = null
 ) => {
   const [screenConfig, setScreenConfig] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -73,6 +74,11 @@ export const useScreenConfig = (
           logo_size: "150px", // Default size
           logo_position: "center", // Default position
           navigation_config: navigationConfig, // Navigation config desde DB
+          // Colores desde client_configs
+          background_color: clientConfig.colors_json?.background || "#ffffff",
+          primary_color: clientConfig.colors_json?.primary || "#017755",
+          secondary_color: clientConfig.colors_json?.secondary || "#64748b",
+          accent_color: clientConfig.colors_json?.accent || "#f97316",
         });
       } else {
         // Para otras pantallas, consultar client_screen_configs normalmente
@@ -92,11 +98,46 @@ export const useScreenConfig = (
 
         const savedConfig = data?.settings_json || {};
 
+        // Para pantallas posteriores a login_generic_logo, agregar colores globales
+        const globalColors =
+          screenId !== "login_generic_logo"
+            ? {
+                background_color:
+                  clientConfig.colors_json?.background || "#ffffff",
+                primary_color: clientConfig.colors_json?.primary || "#017755",
+                secondary_color:
+                  clientConfig.colors_json?.secondary || "#64748b",
+                accent_color: clientConfig.colors_json?.accent || "#f97316",
+              }
+            : {};
+
+        console.log(`🔍 useScreenConfig - ${screenId} color sources:`, {
+          clientConfig_colors: clientConfig.colors_json,
+          globalColors,
+          savedConfig,
+        });
+
         // Combinar configuración del cliente con específica de pantalla
-        setScreenConfig({
+        // Los colores globales tienen prioridad sobre savedConfig para evitar sobrescritura
+        const finalConfig = {
           ...defaultConfig,
           ...savedConfig,
+          ...globalColors, // Colores globales para pantallas posteriores (prioridad final)
+        };
+
+        console.log(`🎨 useScreenConfig - ${screenId} final config:`, {
+          defaultConfig,
+          savedConfig,
+          globalColors,
+          finalConfig: {
+            background_color: finalConfig.background_color,
+            primary_color: finalConfig.primary_color,
+            secondary_color: finalConfig.secondary_color,
+            accent_color: finalConfig.accent_color,
+          },
         });
+
+        setScreenConfig(finalConfig);
       }
     } catch (err) {
       setError(
@@ -117,21 +158,84 @@ export const useScreenConfig = (
         setIsLoading(true);
         setError(null);
 
-        // Para login_generic_logo, manejar logo_url y navigation_config por separado
+        // Para login_generic_logo, manejar logo_url, colores y navigation_config por separado
         if (screenId === "login_generic_logo") {
-          // 1. Actualizar client_configs si se cambió el logo_url
+          // 1. Actualizar client_configs si se cambiaron campos
+          const updates = {};
+          let hasUpdates = false;
+
+          // Logo URL
           if (
             newConfig.logo_url &&
             newConfig.logo_url !== clientConfig.logoUrl
           ) {
+            updates.logo_url = newConfig.logo_url;
+            hasUpdates = true;
             console.log("🔄 Updating client logo_url:", newConfig.logo_url);
+          }
+
+          // Colores
+          const currentColors = clientConfig.colors_json || {};
+          const newColors = { ...currentColors };
+
+          if (
+            newConfig.background_color &&
+            newConfig.background_color !== currentColors.background
+          ) {
+            newColors.background = newConfig.background_color;
+            hasUpdates = true;
+            console.log(
+              "🔄 Updating background color:",
+              newConfig.background_color
+            );
+          }
+
+          if (
+            newConfig.primary_color &&
+            newConfig.primary_color !== currentColors.primary
+          ) {
+            newColors.primary = newConfig.primary_color;
+            hasUpdates = true;
+            console.log("🔄 Updating primary color:", newConfig.primary_color);
+          }
+
+          if (
+            newConfig.secondary_color &&
+            newConfig.secondary_color !== currentColors.secondary
+          ) {
+            newColors.secondary = newConfig.secondary_color;
+            hasUpdates = true;
+            console.log(
+              "🔄 Updating secondary color:",
+              newConfig.secondary_color
+            );
+          }
+
+          if (
+            newConfig.accent_color &&
+            newConfig.accent_color !== currentColors.accent
+          ) {
+            newColors.accent = newConfig.accent_color;
+            hasUpdates = true;
+            console.log("🔄 Updating accent color:", newConfig.accent_color);
+          }
+
+          if (hasUpdates) {
+            if (Object.keys(newColors).length > 0) {
+              updates.colors_json = newColors;
+            }
+            updates.updated_at = new Date().toISOString();
+
             await supabaseClient
               .from("client_configs")
-              .update({
-                logo_url: newConfig.logo_url,
-                updated_at: new Date().toISOString(),
-              })
+              .update(updates)
               .eq("client_id", clientId);
+
+            // Refrescar clientConfig después de actualizar colores
+            if (refetchClientConfig) {
+              console.log("🔄 Refreshing client config after color update");
+              await refetchClientConfig();
+            }
           }
 
           // 2. Guardar navigation_config en client_screen_configs (excepción especial)
@@ -189,6 +293,18 @@ export const useScreenConfig = (
 
         // Filtrar configuración según el tipo de pantalla
         let configToSave = { ...newConfig };
+
+        // Para login_generic_form y pantallas posteriores, NO guardar colores globales
+        if (screenId !== "login_generic_logo") {
+          // Eliminar colores globales de la configuración a guardar
+          delete configToSave.background_color;
+          delete configToSave.primary_color;
+          delete configToSave.secondary_color;
+          delete configToSave.accent_color;
+          console.log(
+            `ℹ️ ${screenId}: Removed global colors from screen config (managed globally)`
+          );
+        }
 
         const configData = {
           client_id: clientId,

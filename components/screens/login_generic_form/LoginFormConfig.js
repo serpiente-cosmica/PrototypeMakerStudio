@@ -13,6 +13,7 @@ const LoginFormConfig = ({
   onReset,
   isLoading = false,
   clientId,
+  availableScreens = [],
 }) => {
   const [localConfig, setLocalConfig] = useState(screenConfig);
   const { uploadFile, isLoading: uploadLoading } = useFileUpload();
@@ -44,6 +45,30 @@ const LoginFormConfig = ({
 
   const handleReset = () => {
     onReset();
+  };
+
+  const handleNavigationChange = (elementId, targetScreenId) => {
+    const currentNavigation = localConfig.navigation_config || {};
+    const newNavigation = {
+      ...currentNavigation,
+      [elementId]: {
+        target_screen_id: targetScreenId || null,
+        enabled: !!targetScreenId,
+      },
+    };
+
+    // Si no hay target_screen_id, eliminar el elemento
+    if (!targetScreenId) {
+      delete newNavigation[elementId];
+    }
+
+    const newConfig = {
+      ...localConfig,
+      navigation_config: newNavigation,
+    };
+
+    setLocalConfig(newConfig);
+    onConfigChange(newConfig);
   };
 
   return (
@@ -201,76 +226,124 @@ const LoginFormConfig = ({
         />
       </div>
 
-      {/* Campos comunes para todas las pantallas */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Background Color
-        </label>
-        <div className="flex items-center space-x-3">
-          <input
-            type="color"
-            value={localConfig.background_color || "#ffffff"}
-            onChange={(e) =>
-              handleFieldChange("background_color", e.target.value)
-            }
-            className="w-16 h-10 border border-gray-300 rounded cursor-pointer"
-          />
-          <input
-            type="text"
-            value={localConfig.background_color || "#ffffff"}
-            onChange={(e) =>
-              handleFieldChange("background_color", e.target.value)
-            }
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="#ffffff"
-          />
+      {/* Configuración de navegación */}
+      <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+        <h4 className="text-sm font-medium text-gray-800 mb-3">
+          🧭 Navigation Configuration
+        </h4>
+
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3">
+            <label className="w-24 text-sm text-gray-700">Logo →</label>
+            <select
+              value={
+                localConfig.navigation_config?.logo_click?.target_screen_id ||
+                ""
+              }
+              onChange={(e) =>
+                handleNavigationChange("logo_click", e.target.value)
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+              <option value="">No navigation</option>
+              {availableScreens
+                .filter((screen) => screen.screen_id !== screenId)
+                .map((screen) => (
+                  <option key={screen.screen_id} value={screen.screen_id}>
+                    {screen.app_screens?.name || screen.screen_id}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <label className="w-24 text-sm text-gray-700">Login Button →</label>
+            <select
+              value={
+                localConfig.navigation_config?.login_button?.target_screen_id ||
+                ""
+              }
+              onChange={(e) =>
+                handleNavigationChange("login_button", e.target.value)
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+              <option value="">No navigation</option>
+              {availableScreens
+                .filter((screen) => screen.screen_id !== screenId)
+                .map((screen) => (
+                  <option key={screen.screen_id} value={screen.screen_id}>
+                    {screen.app_screens?.name || screen.screen_id}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <label className="w-24 text-sm text-gray-700">
+              Forgot Password →
+            </label>
+            <select
+              value={
+                localConfig.navigation_config?.forgot_password
+                  ?.target_screen_id || ""
+              }
+              onChange={(e) =>
+                handleNavigationChange("forgot_password", e.target.value)
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+              <option value="">No navigation</option>
+              {availableScreens
+                .filter((screen) => screen.screen_id !== screenId)
+                .map((screen) => (
+                  <option key={screen.screen_id} value={screen.screen_id}>
+                    {screen.app_screens?.name || screen.screen_id}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <label className="w-24 text-sm text-gray-700">New Account →</label>
+            <select
+              value={
+                localConfig.navigation_config?.new_account?.target_screen_id ||
+                ""
+              }
+              onChange={(e) =>
+                handleNavigationChange("new_account", e.target.value)
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+              <option value="">No navigation</option>
+              {availableScreens
+                .filter((screen) => screen.screen_id !== screenId)
+                .map((screen) => (
+                  <option key={screen.screen_id} value={screen.screen_id}>
+                    {screen.app_screens?.name || screen.screen_id}
+                  </option>
+                ))}
+            </select>
+          </div>
         </div>
+
+        <p className="text-xs text-gray-500 mt-2">
+          Choose which elements should be clickable and where they should
+          navigate. Leave empty for no navigation.
+        </p>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Primary Color
-        </label>
-        <div className="flex items-center space-x-3">
-          <input
-            type="color"
-            value={localConfig.primary_color || "#3b82f6"}
-            onChange={(e) => handleFieldChange("primary_color", e.target.value)}
-            className="w-16 h-10 border border-gray-300 rounded cursor-pointer"
-          />
-          <input
-            type="text"
-            value={localConfig.primary_color || "#3b82f6"}
-            onChange={(e) => handleFieldChange("primary_color", e.target.value)}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="#3b82f6"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Secondary Color
-        </label>
-        <div className="flex items-center space-x-3">
-          <input
-            type="color"
-            value={localConfig.secondary_color || "#64748b"}
-            onChange={(e) =>
-              handleFieldChange("secondary_color", e.target.value)
-            }
-            className="w-16 h-10 border border-gray-300 rounded cursor-pointer"
-          />
-          <input
-            type="text"
-            value={localConfig.secondary_color || "#64748b"}
-            onChange={(e) =>
-              handleFieldChange("secondary_color", e.target.value)
-            }
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="#64748b"
-          />
-        </div>
+      {/* Información sobre configuración de colores */}
+      <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+        <h4 className="text-sm font-medium text-blue-800 mb-2">
+          ℹ️ Color Configuration
+        </h4>
+        <p className="text-xs text-blue-600">
+          Colors are managed globally from the first screen
+          (login_generic_logo). Changes made there will be applied to all
+          screens including this one.
+        </p>
       </div>
 
       {/* Botones de acción */}

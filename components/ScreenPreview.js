@@ -54,7 +54,7 @@ const ScreenPreview = ({
   }
 
   return (
-    <div className="h-full bg-white overflow-hidden">
+    <div className="h-full overflow-hidden">
       <ScreenWrapper
         screenId={screenId}
         screenSettings={screenSettings}
