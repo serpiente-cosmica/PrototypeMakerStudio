@@ -1,148 +1,161 @@
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAppConfig } from "../../hooks/useAppConfig";
-import FoodboxLayout from "../../layouts/FoodboxLayout";
+import { useApproachScreens } from "../../hooks/useApproachScreens";
+import ScreenPreview from "../../components/ScreenPreview";
 
 /**
- * Main demo page with conditional rendering based on approach
+ * Main demo page - shows client screens as a real mobile app
  * Route: /demo/[clientId]
  */
 const DemoPage = () => {
   const router = useRouter();
   const { clientId } = router.query;
-  const { config, isLoading, error } = useAppConfig(clientId);
+  const { config, isLoading: configLoading } = useAppConfig(clientId);
+  const { screens, isLoading: screensLoading } = useApproachScreens(
+    config?.approach_id
+  );
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">
-            Loading configuration...
-          </h2>
-          <p className="text-gray-500">Preparing demo for client: {clientId}</p>
-        </div>
-      </div>
-    );
-  }
+  const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
+  const [screenSettings, setScreenSettings] = useState({});
 
-  // Error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <div className="text-red-600 mb-4">
-              <svg
-                className="w-12 h-12 mx-auto"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-red-800 mb-2">
-              Error loading configuration
-            </h3>
-            <p className="text-red-600 mb-4">{error}</p>
-            <button
-              onClick={() => router.push("/portal")}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              Back to Portal
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Load initial screen settings from client config
+  useEffect(() => {
+    if (config) {
+      setScreenSettings({
+        logo_url: config.logo_url || "",
+        background_color: config.colors_json?.background || "#ffffff",
+      });
+    }
+  }, [config]);
 
-  // No config found
-  if (!config) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-            <div className="text-yellow-600 mb-4">
-              <svg
-                className="w-12 h-12 mx-auto"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-              Client not found
-            </h3>
-            <p className="text-yellow-600 mb-4">
-              No configuration found for client: {clientId}
-            </p>
-            <button
-              onClick={() => router.push("/portal")}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              Back to Portal
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Set initial selected screen
+  useEffect(() => {
+    if (screens.length > 0 && currentScreenIndex >= screens.length) {
+      setCurrentScreenIndex(0); // Reset if current index is out of bounds
+    }
+  }, [screens, currentScreenIndex]);
 
-  // Renderizado condicional basado en el approach
-  const renderLayout = () => {
-    // Por ahora todos usan el mismo layout base (Approach 1)
-    return (
-      <FoodboxLayout config={config}>
-        {/* Contenido específico del demo */}
-        <div className="space-y-6">
-          <div className="bg-blue-100 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-800 mb-2">
-              🚀 {config.approach} Features
-            </h3>
-            <ul className="text-blue-700 space-y-1">
-              <li>• Dynamic white label configuration</li>
-              <li>• Customizable colors</li>
-              <li>• Custom logo and branding</li>
-              <li>• Integrated admin panel</li>
-            </ul>
-          </div>
+  const handleNextScreen = () => {
+    setCurrentScreenIndex((prevIndex) => (prevIndex + 1) % screens.length);
+  };
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-white border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-gray-800 mb-2">
-                Active Configurations
-              </h4>
-              <p className="text-2xl font-bold text-blue-600">
-                {Object.keys(config.features || {}).length}
-              </p>
-            </div>
-            <div className="bg-white border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-gray-800 mb-2">Client Status</h4>
-              <p className="text-2xl font-bold text-green-600 capitalize">
-                {config.status}
-              </p>
-            </div>
-          </div>
-        </div>
-      </FoodboxLayout>
+  const handlePreviousScreen = () => {
+    setCurrentScreenIndex((prevIndex) =>
+      prevIndex === 0 ? screens.length - 1 : prevIndex - 1
     );
   };
 
-  return renderLayout();
+  if (configLoading || screensLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!config) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            Client Not Found
+          </h1>
+          <button
+            onClick={() => router.push("/portal")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Back to Portal
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentScreen = screens[currentScreenIndex];
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      {/* Header de la aplicación móvil simulada - SIN LOGO para evitar duplicación */}
+      <header className="bg-white shadow-sm border-b py-3 px-4 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <h1 className="text-lg font-semibold text-gray-800">
+            {config?.app_name || "Loading..."}
+          </h1>
+        </div>
+        <div className="text-sm text-gray-500">
+          {currentScreenIndex + 1}/{screens.length}
+        </div>
+      </header>
+
+      {/* Marco de la aplicación móvil */}
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="w-80 h-[600px] bg-white rounded-lg shadow-lg overflow-hidden relative">
+          {currentScreen ? (
+            <ScreenPreview
+              clientId={clientId}
+              screenId={currentScreen.screen_id}
+              screenSettings={screenSettings}
+            />
+          ) : (
+            <div className="h-full flex items-center justify-center bg-gray-100">
+              <p className="text-gray-600">
+                No screens available for this approach.
+              </p>
+            </div>
+          )}
+
+          {/* Controles de navegación */}
+          {screens.length > 1 && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+              <button
+                onClick={handlePreviousScreen}
+                className="p-2 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 focus:outline-none"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              {screens.map((_, index) => (
+                <span
+                  key={index}
+                  className={`block w-2 h-2 rounded-full mx-1 ${
+                    index === currentScreenIndex ? "bg-blue-600" : "bg-gray-300"
+                  }`}
+                ></span>
+              ))}
+              <button
+                onClick={handleNextScreen}
+                className="p-2 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 focus:outline-none"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default DemoPage;

@@ -23,6 +23,11 @@ self.__BUILD_MANIFEST = {
       "static/chunks/webpack.js",
       "static/chunks/main.js",
       "static/chunks/pages/portal.js"
+    ],
+    "/portal/client/[clientId]/configure": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/portal/client/[clientId]/configure.js"
     ]
   },
   "ampFirstPages": []

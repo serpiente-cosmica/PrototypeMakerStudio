@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { useClients } from "../hooks/useAppConfig";
 import { useAppApproaches } from "../hooks/useAppApproaches";
+import ClientCreationForm from "../components/ClientCreationForm";
 
 /**
  * Portal de gestión de clientes con tabla y tabs de approaches
@@ -15,6 +16,8 @@ const PortalPage = () => {
     error: approachesError,
   } = useAppApproaches();
   const [showApproachesModal, setShowApproachesModal] = useState(false);
+  const [showClientForm, setShowClientForm] = useState(false);
+  const [selectedApproach, setSelectedApproach] = useState(null);
 
   const handleClientDemo = (clientId) => {
     window.open(`/demo/${clientId}`, "_blank");
@@ -29,11 +32,17 @@ const PortalPage = () => {
   };
 
   const handleApproachSelect = (approachId) => {
-    // Permitir cualquier approach que venga de la base de datos
-    // Generate a unique client ID
-    const clientId = `new-client-${Date.now()}`;
-    router.push(`/demo/${clientId}`);
-    setShowApproachesModal(false);
+    const approach = approaches.find((a) => a.approach_id === approachId);
+    if (approach) {
+      setSelectedApproach(approach);
+      setShowApproachesModal(false);
+      setShowClientForm(true);
+    }
+  };
+
+  const handleCloseClientForm = () => {
+    setShowClientForm(false);
+    setSelectedApproach(null);
   };
 
   const handleCloseModal = () => {
@@ -175,7 +184,7 @@ const PortalPage = () => {
       <footer className="bg-white border-t border-gray-200 py-8 mt-16">
         <div className="container mx-auto px-4 text-center">
           <p className="text-gray-500">
-            © 2024 Advanta - Demo Customizer Platform
+            © 2025 Advanta - Demo Customizer Platform
           </p>
         </div>
       </footer>
@@ -272,6 +281,15 @@ const PortalPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Client Creation Form */}
+      {showClientForm && selectedApproach && (
+        <ClientCreationForm
+          approachId={selectedApproach.approach_id}
+          approachName={selectedApproach.name}
+          onClose={handleCloseClientForm}
+        />
       )}
     </div>
   );
