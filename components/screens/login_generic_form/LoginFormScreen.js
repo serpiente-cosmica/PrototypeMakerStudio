@@ -90,22 +90,19 @@ const LoginFormScreen = ({
         </div>
       </div>
 
-      {/* Segunda imagen/logo en la parte superior */}
-      {screenSettings?.second_logo_url && (
-        <div className="flex justify-center mb-6">
-          <div className="w-24 h-24">
-            <ImageTest src={screenSettings.second_logo_url} alt="Second Logo" />
-          </div>
-        </div>
-      )}
-
-      {/* Logo principal */}
+      {/* Imagen principal */}
       <div className="flex justify-center mb-8">
         <div className="text-center">
-          <div className="text-3xl font-bold text-blue-900 mb-2">
-            activefit
-            <span className="text-green-500 text-2xl">+</span>
-          </div>
+          {screenSettings?.app_logo_url ? (
+            <div className="w-32 h-16 flex items-center justify-center">
+              <ImageTest src={screenSettings.app_logo_url} alt="Top Image" />
+            </div>
+          ) : (
+            <div className="text-3xl font-bold text-blue-900 mb-2">
+              activefit
+              <span className="text-green-500 text-2xl">+</span>
+            </div>
+          )}
         </div>
       </div>
 

@@ -50,7 +50,7 @@ export const useScreenSpecificConfig = (
       if (data) {
         // Combinar configuración guardada con valores por defecto del cliente
         const savedConfig = data.settings_json || {};
-        
+
         // Para login_generic_logo, solo gestionar propiedades específicas de la pantalla
         if (screenId === "login_generic_logo") {
           const screenSpecificDefaults = getDefaultFieldsForScreen(screenId);
@@ -62,7 +62,8 @@ export const useScreenSpecificConfig = (
           // Para otras pantallas, combinar configuración del cliente con específica de pantalla
           const defaultScreenConfig = {
             logo_url: defaultConfig.logoUrl || "",
-            background_color: defaultConfig.colors_json?.background || "#ffffff",
+            background_color:
+              defaultConfig.colors_json?.background || "#ffffff",
             primary_color: defaultConfig.colors_json?.primary || "#3b82f6",
             secondary_color: defaultConfig.colors_json?.secondary || "#64748b",
             accent_color: defaultConfig.colors_json?.accent || "#f59e0b",
@@ -84,7 +85,8 @@ export const useScreenSpecificConfig = (
           // Para otras pantallas, incluir configuración del cliente
           const defaultScreenConfig = {
             logo_url: defaultConfig.logoUrl || "",
-            background_color: defaultConfig.colors_json?.background || "#ffffff",
+            background_color:
+              defaultConfig.colors_json?.background || "#ffffff",
             primary_color: defaultConfig.colors_json?.primary || "#3b82f6",
             secondary_color: defaultConfig.colors_json?.secondary || "#64748b",
             accent_color: defaultConfig.colors_json?.accent || "#f59e0b",
@@ -121,17 +123,17 @@ export const useScreenSpecificConfig = (
           .eq("screen_id", screenId)
           .maybeSingle();
 
+        // Para login_generic_logo, NO guardar en client_screen_configs
+        if (screenId === "login_generic_logo") {
+          console.log(
+            "ℹ️ login_generic_logo: Skipping client_screen_configs save in useScreenSpecificConfig"
+          );
+          setScreenConfig(newConfig);
+          return true; // Retornar éxito sin guardar en client_screen_configs
+        }
+
         // Filtrar configuración según el tipo de pantalla
         let configToSave = { ...newConfig };
-        
-        // Para login_generic_logo, solo guardar propiedades específicas de la pantalla
-        if (screenId === "login_generic_logo") {
-          // Solo mantener logo_size y logo_position
-          configToSave = {
-            logo_size: newConfig.logo_size,
-            logo_position: newConfig.logo_position,
-          };
-        }
 
         const configData = {
           client_id: clientId,

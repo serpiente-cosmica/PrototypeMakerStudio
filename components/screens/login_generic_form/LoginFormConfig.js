@@ -3,6 +3,7 @@
  * Maneja todas las propiedades específicas de esta pantalla
  */
 import React, { useState, useEffect } from "react";
+import { useFileUpload } from "../../../hooks/useFileUpload";
 
 const LoginFormConfig = ({
   screenId,
@@ -11,8 +12,10 @@ const LoginFormConfig = ({
   onSave,
   onReset,
   isLoading = false,
+  clientId,
 }) => {
   const [localConfig, setLocalConfig] = useState(screenConfig);
+  const { uploadFile, isLoading: uploadLoading } = useFileUpload();
 
   // Actualizar configuración local cuando cambie la prop
   useEffect(() => {
@@ -26,39 +29,49 @@ const LoginFormConfig = ({
     onConfigChange(newConfig);
   };
 
+  const handleFileChange = async (e, field) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const uploadedUrl = await uploadFile(file, clientId);
+        handleFieldChange(field, uploadedUrl);
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("Error uploading file. Please try again.");
+      }
+    }
+  };
+
   const handleReset = () => {
     onReset();
   };
 
   return (
     <div className="space-y-4">
-      {/* Logo ctactivefit para pantalla 2 */}
+      {/* Imagen para pantalla 2 */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          App Logo (ctactivefit)
+          Top Image
         </label>
         <div className="space-y-3">
           <div>
             <label className="block text-xs text-gray-600 mb-1">
-              Upload App Logo File
+              Upload Image File
             </label>
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  const tempUrl = URL.createObjectURL(file);
-                  handleFieldChange("app_logo_url", tempUrl);
-                }
-              }}
+              onChange={(e) => handleFileChange(e, "app_logo_url")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            {uploadLoading && (
+              <p className="text-xs text-blue-600 mt-1">Uploading...</p>
+            )}
           </div>
           <div className="text-center text-gray-500 text-sm">OR</div>
           <div>
             <label className="block text-xs text-gray-600 mb-1">
-              App Logo URL
+              Image URL
             </label>
             <input
               type="url"
@@ -67,56 +80,12 @@ const LoginFormConfig = ({
                 handleFieldChange("app_logo_url", e.target.value)
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="https://example.com/app-logo.png"
+              placeholder="https://example.com/image.png"
             />
           </div>
         </div>
         <p className="text-xs text-gray-500 mt-1">
-          Logo that appears at the top of the login form (ctactivefit)
-        </p>
-      </div>
-
-      {/* Segunda imagen/logo para pantalla 2 */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Top Logo (Second Image)
-        </label>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">
-              Upload Second Logo File
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  const tempUrl = URL.createObjectURL(file);
-                  handleFieldChange("second_logo_url", tempUrl);
-                }
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="text-center text-gray-500 text-sm">OR</div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">
-              Second Logo URL
-            </label>
-            <input
-              type="url"
-              value={localConfig.second_logo_url || ""}
-              onChange={(e) =>
-                handleFieldChange("second_logo_url", e.target.value)
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="https://example.com/second-logo.png"
-            />
-          </div>
-        </div>
-        <p className="text-xs text-gray-500 mt-1">
-          Logo that appears at the top of the login form
+          Image that appears at the top of the login form
         </p>
       </div>
 

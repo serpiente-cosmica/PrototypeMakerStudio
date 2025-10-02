@@ -15,8 +15,7 @@ const defaultConfig = {
   new_account_text: "No account yet? Tap here to verify your eligibility.",
   button_radius: "12px",
   button_color: "#017755", // Color verde de Figma
-  app_logo_url: "", // Campo para logo ctactivefit
-  second_logo_url: "", // Campo para segunda imagen
+  app_logo_url: "", // Campo para imagen del formulario de login
 };
 
 // Metadatos de la pantalla

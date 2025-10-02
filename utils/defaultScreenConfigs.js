@@ -53,31 +53,34 @@ export const createDefaultScreenConfigs = async (
         continue;
       }
 
-      // Obtener configuración por defecto de la pantalla
-      let defaultConfig = { ...screenData.defaultConfig };
-
-      // Para pantallas que no son login_generic_logo, combinar con configuración del cliente
-      if (screenId !== "login_generic_logo") {
-        // Verificar si hay logo válido del cliente, sino usar logo por defecto
-        const hasValidClientLogo =
-          clientConfig.logoUrl && clientConfig.logoUrl.trim() !== "";
-        const finalLogoUrl = hasValidClientLogo
-          ? clientConfig.logoUrl
-          : DEFAULT_LOGO_URL;
-
-        defaultConfig = {
-          // Configuración base del cliente con valores por defecto de Figma
-          logo_url: finalLogoUrl,
-          background_color: clientConfig.colors_json?.background || "#ffffff",
-          primary_color: clientConfig.colors_json?.primary || "#017755",
-          secondary_color: clientConfig.colors_json?.secondary || "#64748b",
-          accent_color: clientConfig.colors_json?.accent || "#f59e0b",
-          button_color: clientConfig.colors_json?.primary || "#017755",
-          text_color: "#000000",
-          // Configuración específica de la pantalla (basada en Figma)
-          ...screenData.defaultConfig,
-        };
+      // Para login_generic_logo, NO crear configuración en client_screen_configs
+      if (screenId === "login_generic_logo") {
+        console.log(
+          `ℹ️ Skipping client_screen_configs creation for ${screenId} - uses client_configs only`
+        );
+        continue;
       }
+
+      // Para otras pantallas, crear configuración en client_screen_configs
+      // Verificar si hay logo válido del cliente, sino usar logo por defecto
+      const hasValidClientLogo =
+        clientConfig.logoUrl && clientConfig.logoUrl.trim() !== "";
+      const finalLogoUrl = hasValidClientLogo
+        ? clientConfig.logoUrl
+        : DEFAULT_LOGO_URL;
+
+      const defaultConfig = {
+        // Configuración base del cliente con valores por defecto de Figma
+        logo_url: finalLogoUrl,
+        background_color: clientConfig.colors_json?.background || "#ffffff",
+        primary_color: clientConfig.colors_json?.primary || "#017755",
+        secondary_color: clientConfig.colors_json?.secondary || "#64748b",
+        accent_color: clientConfig.colors_json?.accent || "#f59e0b",
+        button_color: clientConfig.colors_json?.primary || "#017755",
+        text_color: "#000000",
+        // Configuración específica de la pantalla (basada en Figma)
+        ...screenData.defaultConfig,
+      };
 
       configsToInsert.push({
         client_id: clientId,

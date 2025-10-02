@@ -102,17 +102,6 @@ export const useScreenConfig = (
         setIsLoading(true);
         setError(null);
 
-        // Verificar si ya existe configuración para esta pantalla
-        const { data: existingData } = await supabaseClient
-          .from("client_screen_configs")
-          .select("id")
-          .eq("client_id", clientId)
-          .eq("screen_id", screenId)
-          .maybeSingle();
-
-        // Filtrar configuración según el tipo de pantalla
-        let configToSave = { ...newConfig };
-
         // Para login_generic_logo, NO guardar en client_screen_configs
         if (screenId === "login_generic_logo") {
           // Solo actualizar client_configs si se cambió el logo_url
@@ -134,8 +123,20 @@ export const useScreenConfig = (
           console.log(
             "ℹ️ login_generic_logo: Skipping client_screen_configs save"
           );
+          setScreenConfig(newConfig);
           return true; // Retornar éxito sin guardar en client_screen_configs
         }
+
+        // Para otras pantallas, verificar si ya existe configuración
+        const { data: existingData } = await supabaseClient
+          .from("client_screen_configs")
+          .select("id")
+          .eq("client_id", clientId)
+          .eq("screen_id", screenId)
+          .maybeSingle();
+
+        // Filtrar configuración según el tipo de pantalla
+        let configToSave = { ...newConfig };
 
         const configData = {
           client_id: clientId,
