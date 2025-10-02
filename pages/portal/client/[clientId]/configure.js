@@ -71,7 +71,7 @@ const ClientConfigurationPage = () => {
           ...prev,
           logo_url: uploadedUrl,
         }));
-        showSuccess("Logo uploaded successfully!");
+        // No mostrar modal, solo actualizar el logo en la pantalla
       } catch (error) {
         console.error("Error uploading file:", error);
         showError("Error uploading file. Please try again.");
@@ -86,8 +86,6 @@ const ClientConfigurationPage = () => {
     }
 
     try {
-      console.log("💾 Saving settings:", screenSettings);
-
       // Actualizar la configuración del cliente en client_configs
       const updates = {
         logo_url: screenSettings.logo_url,
@@ -102,7 +100,7 @@ const ClientConfigurationPage = () => {
       if (success) {
         showSuccess("Settings saved successfully!");
         // Refrescar la configuración para que la demo la vea
-        await refetchAppConfig();
+        await refetchConfig();
       } else {
         showError("Error saving settings. Please try again.");
       }

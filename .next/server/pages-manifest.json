@@ -2,6 +2,7 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/portal": "pages/portal.js",
-  "/portal/client/[clientId]/configure": "pages/portal/client/[clientId]/configure.js"
+  "/portal/client/[clientId]/configure": "pages/portal/client/[clientId]/configure.js",
+  "/demo/[clientId]": "pages/demo/[clientId].js",
+  "/portal": "pages/portal.js"
 }

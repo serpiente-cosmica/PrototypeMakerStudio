@@ -23,7 +23,7 @@ const DemoPage = () => {
   useEffect(() => {
     if (config) {
       setScreenSettings({
-        logo_url: config.logo_url || "",
+        logo_url: config.logoUrl || "",
         background_color: config.colors_json?.background || "#ffffff",
       });
     }
@@ -76,18 +76,6 @@ const DemoPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Header de la aplicación móvil simulada - SIN LOGO para evitar duplicación */}
-      <header className="bg-white shadow-sm border-b py-3 px-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <h1 className="text-lg font-semibold text-gray-800">
-            {config?.app_name || "Loading..."}
-          </h1>
-        </div>
-        <div className="text-sm text-gray-500">
-          {currentScreenIndex + 1}/{screens.length}
-        </div>
-      </header>
-
       {/* Marco de la aplicación móvil */}
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-80 h-[600px] bg-white rounded-lg shadow-lg overflow-hidden relative">
