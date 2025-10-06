@@ -227,7 +227,16 @@ const ClientConfigurationPage = () => {
 
               {/* Mobile Preview Container */}
               <div className="bg-gray-100 rounded-lg p-4 flex justify-center">
-                <div className="w-80 h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">
+                <div
+                  className="bg-white rounded-lg shadow-lg overflow-hidden"
+                  style={{
+                    width: "350px",
+                    height: "700px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
                   {currentScreen ? (
                     <ScreenPreview
                       clientId={clientId}

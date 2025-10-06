@@ -19,7 +19,14 @@ Este sistema permite que múltiples desarrolladores trabajen en paralelo creando
 - ✅ No necesitas modificar archivos centrales
 - ✅ El sistema detecta nuevas pantallas automáticamente
 
-### **3. Escalabilidad**
+### **3. Navegación Configurable**
+
+- ✅ Cada elemento puede ser configurado para navegar a otras pantallas
+- ✅ Sistema de dropdowns para seleccionar pantallas destino
+- ✅ Opción "No navigation" para deshabilitar elementos
+- ✅ Cursor pointer solo en elementos navegables
+
+### **4. Escalabilidad**
 
 - ✅ Fácil agregar nuevas pantallas
 - ✅ Sistema de dependencias opcional
@@ -68,6 +75,7 @@ const MiNuevaPantallaScreen = ({
   config,
   screenId,
   onNavigate,
+  availableScreens = [],
   ...props
 }) => {
   if (!config) {
@@ -80,11 +88,34 @@ const MiNuevaPantallaScreen = ({
     );
   }
 
+  // Configuración de navegación
+  const navigationConfig = screenSettings?.navigation_config || {};
+
+  // Handlers para elementos clicables
+  const handleElementClick = (elementId) => {
+    const elementNav = navigationConfig[elementId];
+    if (elementNav?.target_screen_id && onNavigate) {
+      console.log("🔄 Navigating to:", elementNav.target_screen_id);
+      onNavigate(elementNav.target_screen_id);
+    }
+  };
+
   // Tu lógica de pantalla aquí
   return (
     <div className="h-full w-full bg-white">
       <h1>Mi Nueva Pantalla</h1>
-      {/* Tu contenido aquí */}
+
+      {/* Elemento con navegación configurable */}
+      <div
+        style={{
+          cursor: navigationConfig?.mi_elemento?.target_screen_id
+            ? "pointer"
+            : "default",
+        }}
+        onClick={() => handleElementClick("mi_elemento")}
+      >
+        {/* Tu contenido clicable aquí */}
+      </div>
     </div>
   );
 };
@@ -105,6 +136,8 @@ const MiNuevaPantallaConfig = ({
   onSave,
   onReset,
   isLoading = false,
+  clientId,
+  availableScreens = [],
 }) => {
   const [localConfig, setLocalConfig] = useState(screenConfig);
 
@@ -114,6 +147,30 @@ const MiNuevaPantallaConfig = ({
 
   const handleFieldChange = (field, value) => {
     const newConfig = { ...localConfig, [field]: value };
+    setLocalConfig(newConfig);
+    onConfigChange(newConfig);
+  };
+
+  const handleNavigationChange = (elementId, targetScreenId) => {
+    const currentNavigation = localConfig.navigation_config || {};
+    const newNavigation = {
+      ...currentNavigation,
+      [elementId]: {
+        target_screen_id: targetScreenId || null,
+        enabled: !!targetScreenId,
+      },
+    };
+
+    // Si no hay target_screen_id, eliminar el elemento
+    if (!targetScreenId) {
+      delete newNavigation[elementId];
+    }
+
+    const newConfig = {
+      ...localConfig,
+      navigation_config: newNavigation,
+    };
+
     setLocalConfig(newConfig);
     onConfigChange(newConfig);
   };
@@ -136,6 +193,43 @@ const MiNuevaPantallaConfig = ({
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Valor por defecto"
         />
+      </div>
+
+      {/* Configuración de navegación */}
+      <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+        <h4 className="text-sm font-medium text-gray-800 mb-3">
+          🧭 Navigation Configuration
+        </h4>
+
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3">
+            <label className="w-24 text-sm text-gray-700">Mi Elemento →</label>
+            <select
+              value={
+                localConfig.navigation_config?.mi_elemento?.target_screen_id ||
+                ""
+              }
+              onChange={(e) =>
+                handleNavigationChange("mi_elemento", e.target.value)
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+              <option value="">No navigation</option>
+              {availableScreens
+                .filter((screen) => screen.screen_id !== screenId)
+                .map((screen) => (
+                  <option key={screen.screen_id} value={screen.screen_id}>
+                    {screen.app_screens?.name || screen.screen_id}
+                  </option>
+                ))}
+            </select>
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-500 mt-2">
+          Choose which elements should be clickable and where they should
+          navigate. Leave empty for no navigation.
+        </p>
       </div>
 
       {/* Botones de acción */}
@@ -314,7 +408,13 @@ El registro se ejecuta **automáticamente** cuando:
   "mi_campo": "valor personalizado",
   "otro_campo": "otro valor",
   "logo_size": "150px",
-  "logo_position": "center"
+  "logo_position": "center",
+  "navigation_config": {
+    "mi_elemento": {
+      "target_screen_id": "otra_pantalla",
+      "enabled": true
+    }
+  }
 }
 ```
 
@@ -323,7 +423,7 @@ El registro se ejecuta **automáticamente** cuando:
 ### **En el Componente de Pantalla:**
 
 ```javascript
-const MiPantallaScreen = ({ screenSettings, config, ...props }) => {
+const MiPantallaScreen = ({ screenSettings, config, onNavigate, ...props }) => {
   // Configuración específica de la pantalla
   const miCampo = screenSettings?.mi_campo || "valor por defecto";
 
@@ -331,10 +431,32 @@ const MiPantallaScreen = ({ screenSettings, config, ...props }) => {
   const logoUrl = config?.logoUrl || "";
   const primaryColor = config?.colors_json?.primary || "#3b82f6";
 
+  // Configuración de navegación
+  const navigationConfig = screenSettings?.navigation_config || {};
+  const elementoNavigation = navigationConfig?.mi_elemento;
+
+  const handleElementClick = () => {
+    if (elementoNavigation?.target_screen_id && onNavigate) {
+      onNavigate(elementoNavigation.target_screen_id);
+    }
+  };
+
   return (
     <div style={{ backgroundColor: primaryColor }}>
       <img src={logoUrl} alt="Logo" />
       <p>{miCampo}</p>
+
+      {/* Elemento con navegación configurable */}
+      <div
+        style={{
+          cursor: elementoNavigation?.target_screen_id ? "pointer" : "default",
+        }}
+        onClick={
+          elementoNavigation?.target_screen_id ? handleElementClick : undefined
+        }
+      >
+        {/* Contenido clicable */}
+      </div>
     </div>
   );
 };
@@ -347,6 +469,7 @@ const MiPantallaScreen = ({ screenSettings, config, ...props }) => {
 3. **Renderizado**: Se pasa a `ScreenWrapper` → `MiPantallaScreen`
 4. **Configuración**: Se pasa a `ConfigWrapper` → `MiPantallaConfig`
 5. **Guardado**: Cambios se guardan automáticamente en Next/Back
+6. **Navegación**: `navigation_config` se guarda en `client_screen_configs`
 
 ## 🚨 **Reglas Importantes**
 
@@ -357,6 +480,9 @@ const MiPantallaScreen = ({ screenSettings, config, ...props }) => {
 - Mantener configuración específica separada de configuración de cliente
 - Usar `screenSettings` para configuración específica
 - Usar `config` para configuración de cliente
+- **Implementar navegación configurable** en elementos clicables
+- **Usar `onNavigate` y `availableScreens`** en props
+- **Incluir `navigation_config`** en configuración de pantalla
 
 ### **❌ NO HACER:**
 
@@ -364,6 +490,8 @@ const MiPantallaScreen = ({ screenSettings, config, ...props }) => {
 - Crear dependencias directas entre pantallas
 - Usar imports directos entre pantallas
 - Modificar `screenMapper.js` manualmente (solo agregar imports)
+- **Olvidar implementar navegación** en elementos clicables
+- **Usar IDs de elementos duplicados** entre pantallas
 
 ## 🐛 **Debugging**
 
@@ -402,13 +530,40 @@ mkdir components/screens/dashboard
 // components/screens/dashboard/DashboardScreen.js
 import React from "react";
 
-const DashboardScreen = ({ screenSettings, config, ...props }) => {
+const DashboardScreen = ({
+  screenSettings,
+  config,
+  onNavigate,
+  availableScreens = [],
+  ...props
+}) => {
   const welcomeText = screenSettings?.welcome_text || "Welcome to Dashboard";
+
+  // Configuración de navegación
+  const navigationConfig = screenSettings?.navigation_config || {};
+  const buttonNavigation = navigationConfig?.dashboard_button;
+
+  const handleButtonClick = () => {
+    if (buttonNavigation?.target_screen_id && onNavigate) {
+      onNavigate(buttonNavigation.target_screen_id);
+    }
+  };
 
   return (
     <div className="h-full w-full bg-white p-6">
       <h1 className="text-2xl font-bold">{welcomeText}</h1>
       <p>Dashboard content here...</p>
+
+      {/* Botón con navegación configurable */}
+      <button
+        onClick={handleButtonClick}
+        style={{
+          cursor: buttonNavigation?.target_screen_id ? "pointer" : "default",
+        }}
+        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+      >
+        Go to Next Screen
+      </button>
     </div>
   );
 };
@@ -422,7 +577,13 @@ export default DashboardScreen;
 // components/screens/dashboard/DashboardConfig.js
 import React, { useState, useEffect } from "react";
 
-const DashboardConfig = ({ screenConfig, onConfigChange, onReset }) => {
+const DashboardConfig = ({
+  screenConfig,
+  onConfigChange,
+  onReset,
+  screenId,
+  availableScreens = [],
+}) => {
   const [localConfig, setLocalConfig] = useState(screenConfig);
 
   useEffect(() => {
@@ -431,6 +592,29 @@ const DashboardConfig = ({ screenConfig, onConfigChange, onReset }) => {
 
   const handleFieldChange = (field, value) => {
     const newConfig = { ...localConfig, [field]: value };
+    setLocalConfig(newConfig);
+    onConfigChange(newConfig);
+  };
+
+  const handleNavigationChange = (elementId, targetScreenId) => {
+    const currentNavigation = localConfig.navigation_config || {};
+    const newNavigation = {
+      ...currentNavigation,
+      [elementId]: {
+        target_screen_id: targetScreenId || null,
+        enabled: !!targetScreenId,
+      },
+    };
+
+    if (!targetScreenId) {
+      delete newNavigation[elementId];
+    }
+
+    const newConfig = {
+      ...localConfig,
+      navigation_config: newNavigation,
+    };
+
     setLocalConfig(newConfig);
     onConfigChange(newConfig);
   };
@@ -447,6 +631,43 @@ const DashboardConfig = ({ screenConfig, onConfigChange, onReset }) => {
           onChange={(e) => handleFieldChange("welcome_text", e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
+
+      {/* Configuración de navegación */}
+      <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+        <h4 className="text-sm font-medium text-gray-800 mb-3">
+          🧭 Navigation Configuration
+        </h4>
+
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3">
+            <label className="w-24 text-sm text-gray-700">Button →</label>
+            <select
+              value={
+                localConfig.navigation_config?.dashboard_button
+                  ?.target_screen_id || ""
+              }
+              onChange={(e) =>
+                handleNavigationChange("dashboard_button", e.target.value)
+              }
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+              <option value="">No navigation</option>
+              {availableScreens
+                .filter((screen) => screen.screen_id !== screenId)
+                .map((screen) => (
+                  <option key={screen.screen_id} value={screen.screen_id}>
+                    {screen.app_screens?.name || screen.screen_id}
+                  </option>
+                ))}
+            </select>
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-500 mt-2">
+          Choose which elements should be clickable and where they should
+          navigate. Leave empty for no navigation.
+        </p>
       </div>
 
       <div className="flex justify-end space-x-3 pt-4 border-t">
@@ -519,7 +740,109 @@ import "../components/screens/dashboard"; // ← AGREGAR ESTA LÍNEA
 // ... resto del código ...
 ```
 
-**✅ ¡Listo!** Tu pantalla "dashboard" está registrada y funcionando.
+**✅ ¡Listo!** Tu pantalla "dashboard" está registrada y funcionando con navegación configurable.
+
+## 🧭 **Sistema de Navegación Configurable**
+
+### **📋 Estructura de `navigation_config`**
+
+```javascript
+navigation_config: {
+  elemento_id: {
+    target_screen_id: "screen_id", // ID de pantalla destino
+    enabled: true                  // Si está habilitado
+  }
+}
+```
+
+### **🎯 Elementos configurables por pantalla**
+
+**`login_generic_logo`:**
+
+- `logo_click` - Logo principal
+
+**`login_generic_form`:**
+
+- `logo_click` - Logo/imagen principal
+- `login_button` - Botón de login
+- `forgot_password` - Enlace "Forgot Password?"
+- `new_account` - Enlace "New Account"
+
+**`dashboard` (ejemplo):**
+
+- `dashboard_button` - Botón principal
+
+### **🔧 Implementación estándar**
+
+#### **En el componente de pantalla:**
+
+```javascript
+// Configuración de navegación
+const navigationConfig = screenSettings?.navigation_config || {};
+const elementoNavigation = navigationConfig?.mi_elemento;
+
+const handleElementClick = () => {
+  if (elementoNavigation?.target_screen_id && onNavigate) {
+    onNavigate(elementoNavigation.target_screen_id);
+  }
+};
+
+// En el JSX
+<div
+  style={{
+    cursor: elementoNavigation?.target_screen_id ? "pointer" : "default",
+  }}
+  onClick={
+    elementoNavigation?.target_screen_id ? handleElementClick : undefined
+  }
+>
+  {/* Contenido del elemento */}
+</div>;
+```
+
+#### **En el componente de configuración:**
+
+```javascript
+const handleNavigationChange = (elementId, targetScreenId) => {
+  const currentNavigation = localConfig.navigation_config || {};
+  const newNavigation = {
+    ...currentNavigation,
+    [elementId]: {
+      target_screen_id: targetScreenId || null,
+      enabled: !!targetScreenId,
+    },
+  };
+
+  if (!targetScreenId) {
+    delete newNavigation[elementId];
+  }
+
+  onConfigChange({ ...localConfig, navigation_config: newNavigation });
+};
+
+// Dropdown para cada elemento
+<select
+  value={localConfig.navigation_config?.elemento_id?.target_screen_id || ""}
+  onChange={(e) => handleNavigationChange("elemento_id", e.target.value)}
+>
+  <option value="">No navigation</option>
+  {availableScreens
+    .filter((screen) => screen.screen_id !== screenId)
+    .map((screen) => (
+      <option key={screen.screen_id} value={screen.screen_id}>
+        {screen.app_screens?.name || screen.screen_id}
+      </option>
+    ))}
+</select>;
+```
+
+### **📝 Convenciones importantes**
+
+- **IDs de elementos**: Usar `snake_case` (`logo_click`, `login_button`)
+- **Cursor pointer**: Solo cuando hay navegación configurada
+- **Filtrado**: Excluir pantalla actual del dropdown
+- **Fallback**: Funcionalidad demo si no hay navegación
+- **Guardado**: `navigation_config` se guarda en `client_screen_configs`
 
 ## 🎯 **Resumen: ¿Dónde se Registra la Pantalla?**
 
@@ -556,5 +879,8 @@ Con este sistema puedes:
 - ✅ Mantener configuración aislada
 - ✅ Escalar fácilmente el sistema
 - ✅ Debuggear problemas de forma independiente
+- ✅ **Implementar navegación configurable** entre pantallas
+- ✅ **Configurar elementos clicables** con dropdowns
+- ✅ **Mantener consistencia** en el sistema de navegación
 
-**¡Cada pantalla es completamente independiente!** 🚀
+**¡Cada pantalla es completamente independiente con navegación configurable!** 🚀

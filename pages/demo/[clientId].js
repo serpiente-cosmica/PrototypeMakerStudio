@@ -93,7 +93,16 @@ const DemoPage = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Marco de la aplicación móvil */}
       <div className="flex-1 flex items-center justify-center p-4">
-        <div className="w-80 h-[600px] bg-white rounded-lg shadow-lg overflow-hidden relative">
+        <div
+          className="bg-white rounded-lg shadow-lg overflow-hidden relative"
+          style={{
+            width: "350px",
+            height: "700px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           {currentScreen ? (
             <ScreenPreview
               clientId={clientId}

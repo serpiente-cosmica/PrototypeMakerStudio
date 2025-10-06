@@ -6,6 +6,7 @@
 // Importar todas las pantallas para que se registren automáticamente
 import "./login_generic_logo";
 import "./login_generic_form";
+import "./data_privacy";
 
 // Exportar funciones del registry para uso externo
 export {
