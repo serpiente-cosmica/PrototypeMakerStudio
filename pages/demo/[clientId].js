@@ -55,11 +55,19 @@ const DemoPage = () => {
 
   // Función para navegar entre pantallas
   const handleNavigate = (targetScreenId) => {
+    console.log("🎯 DEMO Navigation called with targetScreenId:", targetScreenId);
+    console.log("📋 Available screens:", screens.map(s => s.screen_id));
+    
     const targetIndex = screens.findIndex(
       (screen) => screen.screen_id === targetScreenId
     );
+    
     if (targetIndex !== -1) {
+      console.log("✅ Target screen found at index:", targetIndex);
+      console.log("🔄 Navigating from screen", currentScreenIndex, "to screen", targetIndex);
       setCurrentScreenIndex(targetIndex);
+    } else {
+      console.error("❌ Target screen NOT found:", targetScreenId);
     }
   };
 
@@ -90,14 +98,16 @@ const DemoPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Marco de la aplicación móvil */}
+    <div className="min-h-screen bg-gray-900 flex flex-col">
+      {/* iPhone 14/15/16 Pro Max Frame */}
       <div className="flex-1 flex items-center justify-center p-4">
         <div
-          className="bg-white rounded-lg shadow-lg overflow-hidden relative"
+          className="bg-white shadow-2xl overflow-hidden relative"
           style={{
-            width: "350px",
-            height: "700px",
+            width: "430px",
+            height: "932px",
+            border: "12px solid #1f2937",
+            borderRadius: "60px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",

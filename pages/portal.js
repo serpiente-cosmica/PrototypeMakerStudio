@@ -132,16 +132,23 @@ const PortalPage = () => {
     });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
-      {/* Header del portal */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 flex flex-col">
+      {/* Header del portal - Compact version */}
+      <header className="bg-white shadow-lg border-b border-gray-200">
+        <div className="container mx-auto px-6 py-4">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Demo Customizer Portal
+            <div className="flex justify-center mb-2">
+              <div className="bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 p-2 rounded-xl shadow-lg">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+            <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
+              Prototype Maker Studio
             </h1>
-            <p className="text-gray-600">
-              Manage your clients and configure white label demos
+            <p className="text-gray-500 text-sm">
+              Manage clients • Configure screens • Build demos
             </p>
           </div>
         </div>
@@ -150,38 +157,51 @@ const PortalPage = () => {
       {/* Contenido principal */}
       <div className="container mx-auto px-4 py-6 flex-1">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">
-                Registered Clients
-              </h2>
+          <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-200 hover:shadow-3xl transition-shadow duration-300">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent flex items-center gap-3">
+                  <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                  </svg>
+                  Your Prototypes
+                </h2>
+                <p className="text-gray-500 text-sm mt-1">Manage and configure your client prototypes</p>
+              </div>
               <button
                 onClick={handleCreateClient}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                className="group bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
               >
-                ➕ New Client
+                <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+                New Prototype
               </button>
             </div>
 
-            {/* Barra de búsqueda */}
-            <div className="mb-6">
-              <div className="relative">
+            {/* Enhanced Search Bar */}
+            <div className="mb-8">
+              <div className="relative group">
                 <input
                   type="text"
-                  placeholder="Search clients by name, ID, or approach..."
+                  placeholder="Search by name, ID, or approach..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-6 py-4 pl-14 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm hover:shadow-md"
                 />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-gray-400">🔍</span>
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                  </svg>
                 </div>
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm("")}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    className="absolute inset-y-0 right-0 pr-5 flex items-center text-gray-400 hover:text-red-600 transition-colors"
                   >
-                    ✕
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
                   </button>
                 )}
               </div>

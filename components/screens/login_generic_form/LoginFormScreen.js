@@ -188,7 +188,7 @@ const LoginFormScreen = ({
       </div>
 
       {/* Input Fields */}
-      <div className="space-y-4 mb-8">
+      <div className="space-y-4 mb-16">
         {/* Email Field */}
         <div>
           <input
@@ -216,10 +216,10 @@ const LoginFormScreen = ({
         </div>
       </div>
 
-      {/* Log In Button */}
+      {/* Log In Button - Pushed down to match Figma */}
       <button
         onClick={handleLogin}
-        className="w-full py-3 rounded-lg text-white font-semibold mb-4 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200"
+        className="w-full py-4 rounded-lg text-white font-semibold mb-4 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200"
         style={{
           backgroundColor: buttonColor,
           borderRadius: screenSettings?.button_radius || "12px",

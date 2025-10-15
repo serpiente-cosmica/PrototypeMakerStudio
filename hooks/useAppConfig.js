@@ -57,24 +57,8 @@ export const useAppConfig = (clientId) => {
     } catch (err) {
       console.error("❌ Error loading client config:", err);
       setError(err.message);
-
-      // Fallback con datos mock si hay error de conexión
-      console.log("Using mock data for client config");
-      setConfig({
-        clientId: clientId,
-        appName: `${clientId} Demo`,
-        logoUrl: "https://via.placeholder.com/150x150/3b82f6/ffffff?text=LOGO",
-        colors_json: {
-          primary: "#10b981",
-          secondary: "#6b7280",
-          accent: "#f59e0b",
-          background: "#ffffff",
-        },
-        approach_id: "550e8400-e29b-41d4-a716-446655440001",
-        approach_name: "ActiveFit+",
-        screens: {},
-        createdAt: new Date().toISOString(),
-      });
+      // Don't set mock data - let the UI handle the error properly
+      setConfig(null);
     } finally {
       setIsLoading(false);
     }
@@ -138,28 +122,8 @@ export const useClients = () => {
       } catch (err) {
         console.error("Error cargando clientes:", err);
         setError(err.message);
-
-        // Fallback con datos mock si hay error de conexión
-        console.log("Using mock data for clients");
-        setClients([
-          {
-            clientId: "activefit-demo-1234567890",
-            appName: "ActiveFit+ Demo",
-            logoUrl:
-              "https://via.placeholder.com/150x150/10b981/ffffff?text=AF+",
-            colors_json: {
-              primary: "#10b981",
-              secondary: "#6b7280",
-              accent: "#f59e0b",
-              background: "#ffffff",
-            },
-            approach_id: "550e8400-e29b-41d4-a716-446655440001",
-            approach: "Approach 1",
-            createdAt: new Date().toISOString(),
-            demoUrl: "/demo/activefit-demo-1234567890",
-            adminUrl: "/demo/activefit-demo-1234567890/admin",
-          },
-        ]);
+        // Don't show fake clients - let the portal show "No clients found"
+        setClients([]);
       } finally {
         setIsLoading(false);
       }

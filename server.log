@@ -1,0 +1,63 @@
+
+> demo-customizer@1.0.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use, trying 3001 instead.
+  ▲ Next.js 14.2.33
+  - Local:        http://localhost:3001
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1924ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.3s (266 modules)
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /_next/static/webpack/8d1d6d8b366c4a2e.webpack.hot-update.json 404 in 2328ms
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ○ Compiling /portal ...
+ ✓ Compiled /portal in 637ms (421 modules)
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /_next/static/webpack/8d1d6d8b366c4a2e.webpack.hot-update.json 404 in 621ms
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /portal 200 in 684ms
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ ✓ Compiled /demo/[clientId] in 327ms (475 modules)
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /_next/static/webpack/8d1d6d8b366c4a2e.webpack.hot-update.json 404 in 170ms
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+✅ Screen login_generic_logo registered successfully. Total screens: 1
+✅ Screen login_generic_form registered successfully. Total screens: 2
+✅ Screen data_privacy registered successfully. Total screens: 3
+✅ Screen home_dashboard registered successfully. Total screens: 4
+✅ Screen menu_dashboard registered successfully. Total screens: 5
+✅ Screen my_activities registered successfully. Total screens: 6
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /demo/lifeguides-llc 200 in 373ms
+ ✓ Compiled in 355ms (475 modules)
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ ✓ Compiled /demo/[clientId]/admin in 265ms (477 modules)
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /demo/lifeguides-llc/admin 200 in 302ms
+ ✓ Compiled /portal/client/[clientId]/configure in 285ms (487 modules)
+✅ Screen login_generic_logo registered successfully. Total screens: 1
+✅ Screen login_generic_form registered successfully. Total screens: 2
+✅ Screen data_privacy registered successfully. Total screens: 3
+✅ Screen home_dashboard registered successfully. Total screens: 4
+✅ Screen menu_dashboard registered successfully. Total screens: 5
+✅ Screen my_activities registered successfully. Total screens: 6
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /demo/lifeguides-llc 200 in 60ms
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /demo/lifeguides-llc/admin 200 in 28ms
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /demo/lifeguides-llc 200 in 13ms
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /demo/hernan-company 200 in 17ms
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /demo/demo-001 200 in 9ms
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /demo/finaltest+/admin 200 in 21ms
+Warning: viewport meta tags should not be used in _document.js's <Head>. https://nextjs.org/docs/messages/no-document-viewport-meta
+ GET /demo/demo-001 200 in 27ms

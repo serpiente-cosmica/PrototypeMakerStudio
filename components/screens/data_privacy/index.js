@@ -8,41 +8,46 @@ import { registerScreen } from "../../../utils/screenRegistry";
 
 // Configuración por defecto específica de esta pantalla
 const defaultConfig = {
-  title: "Data Privacy",
-  intro_text:
-    'At Advanta Health, we treat any data that relates to an identified or identifiable individual as "personal data," and only use it within our services.',
-  data_section_title: "Data we capture:",
-  steps_text: "Steps",
-  calories_text: "Calories",
-  active_minutes_text: "Active Minutes",
-  distance_text: "Distance",
-  location_text: "Location",
-  workout_photos_text: "Workout Photos with Location",
-  training_text: "Training and Exercises",
-  events_text: "Events from Partner Solutions",
-  device_metadata_text: "Device Metadata",
-  legal_text_prefix: "By continuing, you agree to the",
-  eula_text: "EULA",
-  legal_text_middle: ". Note: Advanta",
-  privacy_policy_text: "Privacy Policy",
-  legal_text_suffix: "describes how data is handled in this service.",
-  accept_button_text: "Accept & Continue",
-  button_radius: "12px",
-  // Nota: Los colores de fondo, primario y secundario se toman de la configuración global del cliente
+  top_bar_color: "#3B82F6",
+  logo_url: "",
+  main_title: "Make the Most of Your Benefits",
+  subtitle: "Easily explore, compare, and manage your benefits — all from one place within the app.",
+  section_1_icon: "⭐",
+  section_1_title: "Discover Your Plan Options",
+  section_1_description: "Browse your available benefits and find the health, dental, or vision plan that works for your lifestyle and budget.",
+  section_2_icon: "📋",
+  section_2_title: "Enroll with Ease",
+  section_2_description: "Follow simple steps to enroll in your chosen plan. No paperwork, no stress — just a smooth, digital experience.",
+  section_3_icon: "🔔",
+  section_3_title: "Stay Informed Year-Round",
+  section_3_description: "Review your coverage details, get reminders for important dates, and make updates when your needs change.",
+  continue_button_text: "Continue",
+  continue_button_color: "#3B82F6",
+  close_button_text: "Close",
+  navigation_config: {
+    continue_button: {
+      target_screen_id: null,
+      enabled: false,
+    },
+    close_button: {
+      target_screen_id: null,
+      enabled: false,
+    },
+  },
 };
 
 // Metadatos de la pantalla
 const metadata = {
-  name: "Data Privacy Screen",
+  name: "Onboarding Screen",
   description:
-    "Pantalla de privacidad de datos con lista de información capturada",
-  version: "1.0.0",
+    "Customizable onboarding screen with three feature sections and navigation buttons",
+  version: "2.0.0",
   author: "Development Team",
   category: "Onboarding",
 };
 
 // Registrar la pantalla
-registerScreen("onboarding_data_privacy", {
+registerScreen("data_privacy", {
   component: DataPrivacyScreen,
   configComponent: DataPrivacyConfig,
   defaultConfig,
