@@ -35,6 +35,7 @@ const ClientConfigurationPage = () => {
   const { uploadFile, isLoading: uploadLoading } = useFileUpload();
 
   const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
   const configLoadedRef = useRef(false);
   const [screenConfigsCache, setScreenConfigsCache] = useState({});
 
@@ -65,17 +66,49 @@ const ClientConfigurationPage = () => {
   // Funciones de navegación tipo carrusel con guardado automático
   const handleNextScreen = async () => {
     if (currentScreenIndex < screens.length - 1) {
+      // Show loading transition
+      setIsNavigating(true);
+      
       // Guardar configuración actual antes de cambiar
       await saveCurrentScreenConfig();
-      setCurrentScreenIndex(currentScreenIndex + 1);
+      
+      // Brief delay for smooth transition
+      setTimeout(() => {
+        setCurrentScreenIndex(currentScreenIndex + 1);
+        setTimeout(() => setIsNavigating(false), 200);
+      }, 300);
     }
   };
 
   const handlePreviousScreen = async () => {
     if (currentScreenIndex > 0) {
+      // Show loading transition
+      setIsNavigating(true);
+      
       // Guardar configuración actual antes de cambiar
       await saveCurrentScreenConfig();
-      setCurrentScreenIndex(currentScreenIndex - 1);
+      
+      // Brief delay for smooth transition
+      setTimeout(() => {
+        setCurrentScreenIndex(currentScreenIndex - 1);
+        setTimeout(() => setIsNavigating(false), 200);
+      }, 300);
+    }
+  };
+
+  const handleDotNavigation = async (targetIndex) => {
+    if (targetIndex !== currentScreenIndex) {
+      // Show loading transition
+      setIsNavigating(true);
+      
+      // Guardar configuración actual antes de cambiar
+      await saveCurrentScreenConfig();
+      
+      // Brief delay for smooth transition
+      setTimeout(() => {
+        setCurrentScreenIndex(targetIndex);
+        setTimeout(() => setIsNavigating(false), 200);
+      }, 300);
     }
   };
 
@@ -325,6 +358,16 @@ const ClientConfigurationPage = () => {
                       borderRadius: "60px",
                     }}
                   >
+                    {/* Navigation Loading Overlay */}
+                    {isNavigating && (
+                      <div className="absolute inset-0 bg-white z-50 flex items-center justify-center transition-opacity duration-300 rounded-[48px]">
+                        <div className="flex flex-col items-center space-y-3">
+                          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+                          <p className="text-sm text-gray-600 font-medium">Loading screen...</p>
+                        </div>
+                      </div>
+                    )}
+                    
                     {currentScreen ? (
                       <div className="w-full h-full overflow-y-auto">
                         <ScreenPreview
@@ -384,7 +427,7 @@ const ClientConfigurationPage = () => {
                               ? "bg-gradient-to-r from-blue-500 to-indigo-600 w-8 shadow-md"
                               : "bg-gray-300 w-2 hover:bg-gray-400 cursor-pointer"
                           }`}
-                          onClick={() => setCurrentScreenIndex(index)}
+                          onClick={() => handleDotNavigation(index)}
                         />
                       ))}
                     </div>

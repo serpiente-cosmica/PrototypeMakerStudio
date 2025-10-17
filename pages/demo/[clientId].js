@@ -35,6 +35,7 @@ const DemoPage = () => {
 
   const [currentScreenIndex, setCurrentScreenIndex] =
     useState(firstScreenIndex);
+  const [isNavigating, setIsNavigating] = useState(false);
   const currentScreen =
     screens.length > 0 ? screens[currentScreenIndex]?.screen_id : null;
 
@@ -53,7 +54,7 @@ const DemoPage = () => {
   const { screenConfig: screenSettings, isLoading: screenConfigLoading } =
     useScreenConfig(clientId, currentScreen, config);
 
-  // Función para navegar entre pantallas
+  // Función para navegar entre pantallas con efecto de transición
   const handleNavigate = (targetScreenId) => {
     console.log("🎯 DEMO Navigation called with targetScreenId:", targetScreenId);
     console.log("📋 Available screens:", screens.map(s => s.screen_id));
@@ -65,7 +66,17 @@ const DemoPage = () => {
     if (targetIndex !== -1) {
       console.log("✅ Target screen found at index:", targetIndex);
       console.log("🔄 Navigating from screen", currentScreenIndex, "to screen", targetIndex);
-      setCurrentScreenIndex(targetIndex);
+      
+      // Show loading transition
+      setIsNavigating(true);
+      
+      // Navigate after brief transition
+      setTimeout(() => {
+        setCurrentScreenIndex(targetIndex);
+        setTimeout(() => {
+          setIsNavigating(false);
+        }, 200);
+      }, 300);
     } else {
       console.error("❌ Target screen NOT found:", targetScreenId);
     }
@@ -113,6 +124,16 @@ const DemoPage = () => {
             alignItems: "center",
           }}
         >
+          {/* Navigation Loading Overlay */}
+          {isNavigating && (
+            <div className="absolute inset-0 bg-white z-50 flex items-center justify-center transition-opacity duration-300">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p className="text-sm text-gray-600 font-medium">Loading...</p>
+              </div>
+            </div>
+          )}
+          
           {currentScreen ? (
             <ScreenPreview
               clientId={clientId}

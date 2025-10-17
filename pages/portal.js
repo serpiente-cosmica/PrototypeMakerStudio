@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useClients } from "../hooks/useAppConfig";
 import { useAppApproaches } from "../hooks/useAppApproaches";
 import { useModal } from "../hooks/useModal";
+import { useDeleteClient } from "../hooks/useDeleteClient";
 import ClientCreationForm from "../components/ClientCreationForm";
 import Modal from "../components/common/Modal";
 import ImageTest from "../components/common/ImageTest";
@@ -18,9 +19,11 @@ const PortalPage = () => {
     isLoading: approachesLoading,
     error: approachesError,
   } = useAppApproaches();
+  const { deleteClient, isDeleting } = useDeleteClient();
   const [showApproachesModal, setShowApproachesModal] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
   const [selectedApproach, setSelectedApproach] = useState(null);
+  const [clientToDelete, setClientToDelete] = useState(null);
 
   // Estados para ordenamiento y búsqueda
   const [searchTerm, setSearchTerm] = useState("");
@@ -82,6 +85,35 @@ const PortalPage = () => {
         document.body.removeChild(textArea);
         showSuccess(`URL copied to clipboard!\n\n${url}`, "Success");
       });
+  };
+
+  const handleDeleteClient = (client) => {
+    setClientToDelete(client);
+  };
+
+  const confirmDelete = async () => {
+    if (!clientToDelete) return;
+
+    const result = await deleteClient(clientToDelete.clientId);
+    
+    if (result.success) {
+      showSuccess(
+        `Prototype "${clientToDelete.appName}" has been deleted successfully.`,
+        "Deleted"
+      );
+      setClientToDelete(null);
+      // Reload the page to refresh the client list
+      router.reload();
+    } else {
+      showSuccess(
+        `Failed to delete prototype: ${result.error}`,
+        "Error"
+      );
+    }
+  };
+
+  const cancelDelete = () => {
+    setClientToDelete(null);
   };
 
   // Funciones para ordenamiento y búsqueda
@@ -339,6 +371,16 @@ const PortalPage = () => {
                                 >
                                   📋 Copy URL
                                 </button>
+                                <button
+                                  onClick={() => handleDeleteClient(client)}
+                                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors flex items-center gap-1"
+                                  title="Delete prototype"
+                                >
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                                  </svg>
+                                  Delete
+                                </button>
                               </div>
                             </td>
                           </tr>
@@ -476,6 +518,20 @@ const PortalPage = () => {
         confirmText={modalProps.confirmText}
         cancelText={modalProps.cancelText}
       />
+
+      {/* Delete Confirmation Modal */}
+      {clientToDelete && (
+        <Modal
+          isOpen={true}
+          title="Delete Prototype"
+          message={`Are you sure you want to delete "${clientToDelete.appName}"?\n\nThis action cannot be undone. All screen configurations for this prototype will be permanently deleted.`}
+          type="error"
+          onClose={cancelDelete}
+          onConfirm={confirmDelete}
+          confirmText={isDeleting ? "Deleting..." : "Delete"}
+          cancelText="Cancel"
+        />
+      )}
     </div>
   );
 };

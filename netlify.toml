@@ -1,0 +1,32 @@
+# Netlify Configuration for Prototype Maker Studio
+# Deploy your Next.js app to Netlify
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Environment variables (Set these in Netlify Dashboard > Site Settings > Environment Variables)
+# NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Redirect rules
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+

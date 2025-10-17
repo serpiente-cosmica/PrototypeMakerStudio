@@ -4,10 +4,8 @@
  * Displays a home dashboard with top bar, banner, alerts, and bottom navigation.
  */
 import React, { useState } from "react";
-import { useScreenNavigation } from "../../../hooks/useScreenNavigation";
 
-const HomeDashboardScreen = ({ clientId, screenSettings = {} }) => {
-  const { navigateToScreen } = useScreenNavigation(clientId);
+const HomeDashboardScreen = ({ clientId, screenSettings = {}, onNavigate }) => {
   const [showNotification, setShowNotification] = useState(false);
 
   // Extract configuration with defaults
@@ -86,11 +84,11 @@ const HomeDashboardScreen = ({ clientId, screenSettings = {} }) => {
 
   const handleNavigation = (elementId) => {
     const navConfig = navigation_config?.[elementId];
-    if (navConfig?.target_screen_id) {
-      console.log(`🔄 Navigating from ${elementId} to:`, navConfig.target_screen_id);
-      navigateToScreen(navConfig.target_screen_id);
+    if (navConfig?.target_screen_id && onNavigate) {
+      console.log(`🔄 [HomeDashboard] Navigating from ${elementId} to:`, navConfig.target_screen_id);
+      onNavigate(navConfig.target_screen_id);
     } else {
-      console.log(`⚠️ No navigation configured for: ${elementId}`);
+      console.log(`⚠️ [HomeDashboard] No navigation configured for: ${elementId}`, { navConfig, hasOnNavigate: !!onNavigate });
     }
   };
 

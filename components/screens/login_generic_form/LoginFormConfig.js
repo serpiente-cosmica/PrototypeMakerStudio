@@ -120,7 +120,7 @@ const LoginFormConfig = ({
         </label>
         <input
           type="text"
-          value={localConfig.email_placeholder || "dmorales@advantahealth.com"}
+          value={localConfig.email_placeholder || ""}
           onChange={(e) =>
             handleFieldChange("email_placeholder", e.target.value)
           }

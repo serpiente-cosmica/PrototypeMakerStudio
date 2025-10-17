@@ -8,7 +8,7 @@ import { registerScreen } from "../../../utils/screenRegistry";
 
 // Configuración por defecto específica de esta pantalla (basada en Figma)
 const defaultConfig = {
-  email_placeholder: "dmorales@advantahealth.com",
+  email_placeholder: "",
   password_placeholder: "**********",
   login_button_text: "Log In",
   forgot_password_text: "Forgot Password?",

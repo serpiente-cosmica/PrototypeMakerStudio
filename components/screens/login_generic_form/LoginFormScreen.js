@@ -14,14 +14,14 @@ const LoginFormScreen = ({
   ...props
 }) => {
   const [formData, setFormData] = useState({
-    email: screenSettings?.email_placeholder || "dmorales@advantahealth.com",
+    email: screenSettings?.email_placeholder || "",
     password: screenSettings?.password_placeholder || "**********",
   });
 
   // Actualizar formData cuando cambien los screenSettings
   useEffect(() => {
     setFormData({
-      email: screenSettings?.email_placeholder || "dmorales@advantahealth.com",
+      email: screenSettings?.email_placeholder || "",
       password: screenSettings?.password_placeholder || "**********",
     });
   }, [screenSettings?.email_placeholder, screenSettings?.password_placeholder]);

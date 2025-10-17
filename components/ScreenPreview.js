@@ -1,6 +1,7 @@
 import { useAppConfig } from "../hooks/useAppConfig";
 import { getScreenComponent } from "../utils/screenMapper";
 import ScreenWrapper from "./common/ScreenWrapper";
+import { inheritColors } from "../utils/colorInheritance";
 
 /**
  * ScreenPreview Component
@@ -53,11 +54,14 @@ const ScreenPreview = ({
     );
   }
 
+  // Apply color inheritance: global colors + screen-specific colors
+  const mergedSettings = inheritColors(config.colors_json, screenSettings);
+
   return (
     <div className="h-full overflow-hidden">
       <ScreenWrapper
         screenId={screenId}
-        screenSettings={screenSettings}
+        screenSettings={mergedSettings}
         clientId={clientId}
         config={config}
         onNavigate={onNavigate}

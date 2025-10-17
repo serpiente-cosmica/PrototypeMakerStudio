@@ -4,10 +4,8 @@
  * Displays activities with calendar and status tracking
  */
 import React, { useState } from "react";
-import { useScreenNavigation } from "../../../hooks/useScreenNavigation";
 
-const MyActivitiesScreen = ({ clientId, screenSettings = {} }) => {
-  const { navigateToScreen } = useScreenNavigation(clientId);
+const MyActivitiesScreen = ({ clientId, screenSettings = {}, onNavigate }) => {
 
   // Extract configuration with defaults
   const {
@@ -87,11 +85,11 @@ const MyActivitiesScreen = ({ clientId, screenSettings = {} }) => {
 
   const handleNavigation = (elementId) => {
     const navConfig = navigation_config?.[elementId];
-    if (navConfig?.target_screen_id) {
-      console.log(`🔄 Navigating from ${elementId} to:`, navConfig.target_screen_id);
-      navigateToScreen(navConfig.target_screen_id);
+    if (navConfig?.target_screen_id && onNavigate) {
+      console.log(`🔄 [MyActivities] Navigating from ${elementId} to:`, navConfig.target_screen_id);
+      onNavigate(navConfig.target_screen_id);
     } else {
-      console.log(`⚠️ No navigation configured for: ${elementId}`);
+      console.log(`⚠️ [MyActivities] No navigation configured for: ${elementId}`, { navConfig, hasOnNavigate: !!onNavigate });
     }
   };
 
